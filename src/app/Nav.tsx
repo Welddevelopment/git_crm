@@ -1,6 +1,7 @@
 "use client";
 /* Lead-owned app shell navigation (Calendly-B sidebar). */
 import { usePathname } from "next/navigation";
+import type React from "react";
 
 const I = {
   overview: <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
@@ -12,7 +13,7 @@ const I = {
   settings: <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>,
 };
 
-const GROUPS: { label: string; items: { href: string; label: string; icon: JSX.Element }[] }[] = [
+const GROUPS: { label: string; items: { href: string; label: string; icon: React.ReactNode }[] }[] = [
   { label: "Home", items: [{ href: "/", label: "Overview", icon: I.overview }] },
   { label: "Review", items: [{ href: "/prs", label: "Pull requests", icon: I.prs }] },
   { label: "CRM", items: [{ href: "/crm", label: "Records (main)", icon: I.crm }, { href: "/timeline", label: "Time travel", icon: I.time }] },
