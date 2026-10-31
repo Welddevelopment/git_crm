@@ -1,11 +1,15 @@
 import type { TargetAdapter } from "../core/types";
 import { builtinAdapter } from "./builtin";
 import { hubspotAdapter } from "./hubspot";
+import { getAttioAdapter } from "./attio";
 
 export { builtinAdapter } from "./builtin";
 export { createHubSpotAdapter, hubspotAdapter, hubspotProperty } from "./hubspot";
 
-/** builtin always; HubSpot only when HUBSPOT_TOKEN is set. */
+/** builtin always; HubSpot / Attio only when their tokens are set. */
 export function getAdapters(): TargetAdapter[] {
-  return process.env.HUBSPOT_TOKEN ? [builtinAdapter, hubspotAdapter] : [builtinAdapter];
+  const out: TargetAdapter[] = [builtinAdapter];
+  if (process.env.HUBSPOT_TOKEN) out.push(hubspotAdapter);
+  if (process.env.ATTIO_TOKEN) out.push(getAttioAdapter());
+  return out;
 }
