@@ -74,9 +74,35 @@ flowchart LR
 
 The LLM only ever **proposes**. Correctness comes from the engine.
 
+## Use it with your CRM
+
+Mainline is a layer, not a new CRM. Reps keep working in HubSpot or Attio; agents keep calling what looks like their CRM's API.
+
+**1. Chrome extension: review agent changes on the CRM record itself.**
+Open any deal, contact or company in HubSpot or Attio (Salesforce and Pipedrive pages are recognised too) and the Mainline side panel shows that record's pending agent PRs: field diff, evidence quotes, policy and staleness, **Approve & merge / Reject**, plus per-field history. It reads only the tab URL, never the page.
+
+- Download: [`/mainline-extension.zip`](https://gitcrm-production.up.railway.app/mainline-extension.zip) (or the [`extension/`](extension) folder)
+- Install: unzip → `chrome://extensions` → **Developer mode** → **Load unpacked** → pick `mainline-extension` → click the violet icon
+- Guide: [`/extension`](https://gitcrm-production.up.railway.app/extension). Not on the Chrome Web Store yet (store review takes days).
+
+**2. Connectors: mirror your CRM into `main`, write merged PRs back.**
+Set `HUBSPOT_TOKEN` (private app, `crm.objects.companies/contacts/deals` read + write) and/or `ATTIO_TOKEN` (records read-write, object configuration read). Mainline imports records, polls for human edits (which is what makes conflicts and staleness real), and writes merged changes back. **Settings → Integrations** has one-click *Seed demo data* and *Import now*.
+
+**3. Drop-in API proxy: your existing agents don't change.**
+Swap one base URL and every write becomes a reviewable PR:
+
+```bash
+curl -X PATCH https://gitcrm-production.up.railway.app/api/proxy/hubspot/crm/v3/objects/deals/acme-platform \
+  -H 'content-type: application/json' -H 'x-mainline-agent: sdr-bot' \
+  -d '{"properties":{"amount":"45000","dealstage":"contractsent"}}'
+# → 202 {"mainline":{"status":"pending_review","pr":"pr_1","tier":"review","reasons":["deal.amount $20,000 → $45,000 (+$25,000) exceeds $10k threshold", …]}}
+```
+
+An Attio-compatible proxy lives at `/api/proxy/attio/v2/objects/{object}/records/{id}`.
+
 ## Tech
 
-Next.js 15 (App Router) · TypeScript · server-sent events for live updates · Vitest · Claude (Anthropic API) for agent reasoning · Firecrawl for live web snapshots (optional) · Photon iMessage notifications for review requests (optional) · deployed on Railway as a single Node process.
+Next.js 15 (App Router) · TypeScript · server-sent events for live updates · Vitest · Claude (Anthropic API) for agent reasoning and the staleness judge · Firecrawl for live account scraping ("Watch account by URL") · HubSpot CRM v3 and Attio v2 connectors · Manifest V3 Chrome extension · deployed on Railway as a single Node process.
 
 ## Run it
 
@@ -86,7 +112,7 @@ npm run dev          # http://localhost:3000
 npm test             # engine, agents, store, API tests
 ```
 
-Optional env vars: `ANTHROPIC_API_KEY` (LLM mode for agents and the staleness judge), `MAINLINE_MODEL`, `FIRECRAWL_API_KEY`, `HUBSPOT_TOKEN`, `PHOTON_API_KEY` / `PHOTON_TO` / `PHOTON_ENDPOINT`, `MAINLINE_DATA_DIR` (persist the event log to disk).
+Optional env vars: `ANTHROPIC_API_KEY` (LLM mode for agents and the staleness judge), `MAINLINE_MODEL`, `FIRECRAWL_API_KEY`, `HUBSPOT_TOKEN`, `ATTIO_TOKEN`, `MAINLINE_DATA_DIR` (persist the event log to disk). Everything works without any keys: agents and the staleness judge fall back to deterministic logic.
 
 ## Repo map
 
@@ -100,7 +126,10 @@ src/server/repo.ts           application service (branch → PR → analyze → 
 src/app/api/**               HTTP API + SSE stream
 src/agents/{inbox,hygiene,schema,webwatch}
 src/seed/**                  demo world: 10 companies, ~25 contacts, ~10 deals, ~30 emails
-src/app/**                   UI: overview, PR review, CRM tables, time travel, demo console
+src/app/**                   UI: overview, PR review, CRM tables, time travel, demo console, settings
+src/integrations/{hubspot,attio}   sync, mapping, API-compatible proxies, seeding
+src/adapters/**              write-back to HubSpot / Attio on merge
+extension/                   Chrome extension (MV3 side panel, no build step)
 ```
 
 ## What was built tonight
