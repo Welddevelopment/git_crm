@@ -1,7 +1,7 @@
-/* Mainline extension: background service worker (MV3).
+/* Git CRM extension: background service worker (MV3).
  * - opens the side panel on toolbar click
  * - tracks the active tab URL and pushes the detected CRM record to the panel
- * - proxies API fetches to the Mainline server (host_permissions avoid CORS)
+ * - proxies API fetches to the Git CRM server (host_permissions avoid CORS)
  */
 importScripts("crms.js");
 

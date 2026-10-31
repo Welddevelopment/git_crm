@@ -1,4 +1,4 @@
-/* Mainline extension: side panel.
+/* Git CRM extension: side panel.
  * Shows pending agent PRs for the CRM record in the active tab (via GET /api/records/lookup),
  * or the global open-PR queue when the tab isn't a recognized record. All network calls go
  * through the background worker (mainline:fetch) so host_permissions apply.
@@ -337,7 +337,7 @@
     delete S.results[prId];
     render(true);
     var by = String(S.settings.reviewer || DEFAULTS.reviewer).trim() || DEFAULTS.reviewer;
-    var body = kind === "merge" ? { by: by } : { by: by, reason: "Rejected from the Mainline Chrome extension" };
+    var body = kind === "merge" ? { by: by } : { by: by, reason: "Rejected from the Git CRM Chrome extension" };
     var r = await api("/api/prs/" + encodeURIComponent(prId) + "/" + kind, { method: "POST", body: body });
     delete S.busy[prId];
     if (r.ok) {
@@ -405,7 +405,7 @@
         if (c.kind === "field") return "<li><code>" + h((c.field || "field")) + "</code>: main has <b>" + h(fmtVal(c.ours, c.field)) + "</b>, this PR wants <b>" + h(fmtVal(c.theirs, c.field)) + "</b></li>";
         return "<li>" + h(c.kind) + " conflict on " + h(slugName(c.entity)) + "</li>";
       }).join("");
-      out.push('<div class="explain conflict"><h4>' + h(plural(unresolved.length, "merge conflict")) + '</h4><p>Pick a side in Mainline before merging.</p><ul>' + li + "</ul></div>");
+      out.push('<div class="explain conflict"><h4>' + h(plural(unresolved.length, "merge conflict")) + '</h4><p>Pick a side in Git CRM before merging.</p><ul>' + li + "</ul></div>");
     }
     var autoRes = (pr.conflicts || []).filter(function (c) { return c.autoResolved; });
     if (autoRes.length) out.push('<div class="explain info"><h4>Auto-rebased</h4><p>' + h(autoRes[0].autoResolved.note || "Edit was rebased onto the merge survivor.") + "</p></div>");
@@ -486,7 +486,7 @@
       var d = docs[r.docId];
       var src = d ? (d.kind + " · " + (d.title || d.id) + (d.from ? " · " + d.from.replace(/<.*>/, "").trim() : "") + (d.ts ? " · " + fmtAge(d.ts) : "")) : r.docId;
       return '<div class="ev"><div class="claim">' + h(r.claim) + "</div>" + (r.quote ? "<blockquote>“" + h(r.quote) + "”</blockquote>" : "") + '<div class="src">' + h(src) + "</div></div>";
-    }).join("") + (refs.length > 6 ? '<div class="muted small">+' + (refs.length - 6) + " more in Mainline</div>" : "");
+    }).join("") + (refs.length > 6 ? '<div class="muted small">+' + (refs.length - 6) + " more in Git CRM</div>" : "");
   }
 
   function actionsHtml(pr) {
@@ -497,7 +497,7 @@
     var blocked = pr.policy && pr.policy.tier === "block";
     var busy = S.busy[id];
     var mergeDisabled = !!busy || blocked || unresolved > 0 || pr.status !== "open";
-    var mergeTitle = blocked ? "Blocked by branch protection" : unresolved ? "Resolve conflicts in Mainline first" : "";
+    var mergeTitle = blocked ? "Blocked by branch protection" : unresolved ? "Resolve conflicts in Git CRM first" : "";
     var stale = pr.staleness && pr.staleness.status === "stale";
     var mergeLabel = busy === "merge" ? "Merging…" : stale ? "Merge anyway" : "Approve &amp; merge";
     var rejectLabel = busy === "close" ? "Rejecting…" : S.confirmReject[id] ? "Confirm reject" : "Reject";
@@ -505,7 +505,7 @@
       '<div class="actions">' +
       '<button class="btn primary" data-act="merge" data-id="' + h(id) + '"' + (mergeDisabled ? " disabled" : "") + (mergeTitle ? ' title="' + h(mergeTitle) + '"' : "") + ">" + mergeLabel + "</button>" +
       '<button class="btn danger" data-act="close" data-id="' + h(id) + '"' + (busy || pr.status !== "open" ? " disabled" : "") + ">" + rejectLabel + "</button>" +
-      '<a class="open-link" href="' + h(prUrl(id)) + '" target="_blank" rel="noopener">' + (unresolved ? "Resolve conflicts in Mainline ↗" : "Open in Mainline ↗") + "</a>" +
+      '<a class="open-link" href="' + h(prUrl(id)) + '" target="_blank" rel="noopener">' + (unresolved ? "Resolve conflicts in Git CRM ↗" : "Open in Git CRM ↗") + "</a>" +
       "</div>";
   }
 
@@ -565,7 +565,7 @@
 
   function errorHtml(e, compact) {
     var unreachable = !e || e.network || e.status === 0 || e.status >= 500;
-    var title = unreachable ? "Can't reach Mainline" : "Mainline returned an error";
+    var title = unreachable ? "Can't reach Git CRM" : "Git CRM returned an error";
     var msg = unreachable ? "The server at " + h(base().replace(/^https?:\/\//, "")) + " didn't respond. It may be waking up — try again in a few seconds." : h(errText(e));
     if (compact) return '<div class="notice"><span>⚠</span><span><b>' + title + ".</b> Showing the last data we had. Retrying every few seconds…</span></div>";
     return '<div class="error"><h3>' + title + "</h3><p>" + msg + '</p><div class="detail">' + h(errText(e)) + '</div><div class="row"><button class="btn sm" data-act="retry">Retry</button><button class="btn sm ghost" data-act="settings">Settings</button></div></div>';
@@ -578,7 +578,7 @@
     conn.className = "conn " + S.conn;
     var connLabel = { ok: "live", err: "offline", demo: "demo data", connecting: "connecting" }[S.conn];
     conn.querySelector(".conn-label").textContent = connLabel;
-    conn.title = S.conn === "ok" ? "Connected to " + base() + " · polling every 4s" + (S.lookupMissing ? " · record lookup computed client-side" : "") : S.conn === "demo" ? "Demo mapping: CRM record shown as a matching Mainline demo record" : S.conn === "err" ? errText(S.lastError) : "Connecting…";
+    conn.title = S.conn === "ok" ? "Connected to " + base() + " · polling every 4s" + (S.lookupMissing ? " · record lookup computed client-side" : "") : S.conn === "demo" ? "Demo mapping: CRM record shown as a matching Git CRM demo record" : S.conn === "err" ? errText(S.lastError) : "Connecting…";
     if (!v) return;
 
     var sig = JSON.stringify([v, S.expanded, S.details, S.busy, S.confirmReject, S.results, S.fresh, S.conn]);
@@ -636,12 +636,12 @@
       var cname = (crm && crm.name) || rec.crmName || rec.crm;
       html += '<div class="record"><div class="r1">' + crmChip(crm) + '<span class="chip system">' + h(rec.label) + '</span></div><h1>' + h(rec.label) + ' <span class="muted mono" style="font-size:12px;font-weight:400">' + h(rec.id) + "</span></h1></div>";
       if (rec.crm === "mainline") {
-        html += '<div class="empty"><div class="big">∅</div><h3>Record not found on main</h3><p>' + h(rec.id) + " doesn't exist in Mainline (it may have been merged or deleted).</p></div>";
+        html += '<div class="empty"><div class="big">∅</div><h3>Record not found on main</h3><p>' + h(rec.id) + " doesn't exist in Git CRM (it may have been merged or deleted).</p></div>";
       } else {
-        html += '<div class="empty"><div class="big" style="color:var(--accent)">' + ICON_PR.replace(/14/g, "22") + '</div><h3>Connect ' + h(cname) + " to Mainline</h3><p>This " + h(rec.label.toLowerCase()) + " isn't mirrored in Mainline yet. Once " + h(cname) +
+        html += '<div class="empty"><div class="big">' + ICON_PR.replace(/14/g, "22") + '</div><h3>Connect ' + h(cname) + " to Git CRM</h3><p>This " + h(rec.label.toLowerCase()) + " isn't mirrored in Git CRM yet. Once " + h(cname) +
           " is connected, agents open PRs against it instead of writing to it directly, and you review them here.</p>" +
           '<div class="row"><a class="btn sm" href="' + h(base() + "/extension") + '" target="_blank" rel="noopener">How to connect ↗</a>' +
-          '<button class="btn sm ghost" data-act="demo-on" title="Map this record to a Mainline demo record of the same type">Use demo mapping</button></div></div>';
+          '<button class="btn sm ghost" data-act="demo-on" title="Map this record to a Git CRM demo record of the same type">Use demo mapping</button></div></div>';
       }
       if (v.queue) html += queueSection(v.queue, "Open PR queue · all records");
       return html;
@@ -649,7 +649,7 @@
     var pending = lk.pendingPRs || [];
     var stale = pending.filter(function (p) { return p.staleness && p.staleness.status === "stale"; }).length;
     html += '<div class="record"><div class="r1">' + crmChip(crm) + '<span class="chip system">' + h(CRMs.kindLabel(entType(lk.entityId))) + "</span>" +
-      (lk._mapped ? '<span class="badge neutral" title="Demo mapping: this CRM record is shown as the matching Mainline demo record">demo mapping</span>' : "") + "</div>" +
+      (lk._mapped ? '<span class="badge neutral" title="Demo mapping: this CRM record is shown as the matching Git CRM demo record">demo mapping</span>' : "") + "</div>" +
       "<h1>" + h(lk.displayName || slugName(lk.entityId)) + "</h1>" +
       '<div class="r3"><span class="eid">' + h(lk.entityId) + '</span><a href="' + h(lk.mainlineUrl || entityUrl(lk.entityId)) + '" target="_blank" rel="noopener">View on main ↗</a></div>' +
       (pending.length

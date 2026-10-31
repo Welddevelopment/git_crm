@@ -1,4 +1,4 @@
-// Generates icons/icon{16,32,48,128}.png: violet rounded square with a white branch glyph.
+// Generates icons/icon{16,32,48,128}.png: blue (#006bff) rounded square with a white "G" (Git CRM).
 // No deps: rasterize with supersampling, encode PNG with node:zlib.
 import { deflateSync } from "node:zlib";
 import { writeFileSync, mkdirSync } from "node:fs";
@@ -31,37 +31,38 @@ function inRoundRect(x, y, r) {
   const cx = Math.min(Math.max(x, r), 1 - r), cy = Math.min(Math.max(y, r), 1 - r);
   return Math.hypot(x - cx, y - cy) <= r;
 }
-// Branch glyph: main line (left), a branch curving off to a node (right), merge node at top.
-const W = 0.085; // stroke half-width
-const A = [0.36, 0.24], B = [0.36, 0.76], C = [0.66, 0.36];
+// "G" glyph: an open ring (gap on the right, upper side) plus a crossbar pointing inward, plus a short stem.
+// Geometry in unit square; stroke half-width grows slightly at tiny sizes for legibility.
+const CX = 0.5, CY = 0.5;
 function glyph(x, y, small) {
-  const w = small ? W * 1.25 : W;
-  const nodeR = small ? 0.13 : 0.115;
-  // trunk
-  if (dSeg(x, y, A[0], A[1], B[0], B[1]) <= w) return true;
-  // branch: quadratic curve from C down to trunk at ~0.62
-  for (let i = 0; i < 24; i++) {
-    const t0 = i / 24, t1 = (i + 1) / 24;
-    const q = (t) => { const p0 = C, p1 = [0.66, 0.6], p2 = [0.36, 0.64]; const u = 1 - t; return [u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0], u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1]]; };
-    const a = q(t0), b = q(t1);
-    if (dSeg(x, y, a[0], a[1], b[0], b[1]) <= w) return true;
-  }
-  for (const [nx, ny] of [A, B, C]) if (Math.hypot(x - nx, y - ny) <= nodeR) return true;
+  const w = small ? 0.085 : 0.07;     // stroke half-width
+  const R = small ? 0.255 : 0.245;    // ring centre-line radius
+  const dx = x - CX, dy = y - CY;
+  const d = Math.hypot(dx, dy);
+  // angle measured from +x axis, y down => clockwise positive. Gap spans from -55deg (upper right) to ~0deg.
+  const a = Math.atan2(dy, dx) * 180 / Math.PI;
+  const inGap = a > -52 && a < 2;
+  if (!inGap && Math.abs(d - R) <= w) return true;
+  // round cap at the upper end of the ring
+  const ca = -52 * Math.PI / 180;
+  if (Math.hypot(x - (CX + R * Math.cos(ca)), y - (CY + R * Math.sin(ca))) <= w) return true;
+  // crossbar from centre-right inward, at y = CY
+  const barL = CX + 0.02, barR = CX + R + w * 0.2;
+  if (x >= barL && x <= barR && Math.abs(y - (CY + 0.005)) <= w) return true;
   return false;
 }
 function render(size) {
   const ss = 6, out = Buffer.alloc(size * size * 4);
-  const top = [0x8f, 0x6b, 0xff], bot = [0x6a, 0x4c, 0xf0];
+  const bgc = [0x00, 0x6b, 0xff]; // --blue #006bff, flat (no gradient)
   const small = size <= 16;
   for (let py = 0; py < size; py++) for (let px = 0; px < size; px++) {
     let bg = 0, fg = 0;
     for (let sy = 0; sy < ss; sy++) for (let sx = 0; sx < ss; sx++) {
       const x = (px + (sx + 0.5) / ss) / size, y = (py + (sy + 0.5) / ss) / size;
-      if (inRoundRect(x, y, 0.22)) { bg++; if (glyph(x, y, small)) fg++; }
+      if (inRoundRect(x, y, 0.24)) { bg++; if (glyph(x, y, small)) fg++; }
     }
-    const n = ss * ss, a = bg / n, f = bg ? fg / bg : 0, ty = py / size;
-    const base = top.map((c, i) => Math.round(c + (bot[i] - c) * ty));
-    const col = base.map((c) => Math.round(c + (255 - c) * f));
+    const n = ss * ss, a = bg / n, f = bg ? fg / bg : 0;
+    const col = bgc.map((c) => Math.round(c + (255 - c) * f));
     const o = (py * size + px) * 4;
     out[o] = col[0]; out[o + 1] = col[1]; out[o + 2] = col[2]; out[o + 3] = Math.round(a * 255);
   }

@@ -42,7 +42,7 @@ const CRMS: CrmMeta[] = [
     key: "hubspot",
     name: "HubSpot",
     letter: "H",
-    color: "var(--warn)",
+    color: "var(--series-2)",
     env: "HUBSPOT_TOKEN",
     scopesTitle: "Private app scopes",
     scopes: [
@@ -59,7 +59,7 @@ const CRMS: CrmMeta[] = [
     key: "attio",
     name: "Attio",
     letter: "A",
-    color: "var(--accent)",
+    color: "var(--series-2)",
     env: "ATTIO_TOKEN",
     scopesTitle: "API key scopes",
     scopes: ["Records: Read-write", "Object configuration: Read"],
@@ -273,7 +273,7 @@ function SoonCard({ name, letter }: { name: string; letter: string }) {
   return (
     <div className="st-card disabled" aria-disabled>
       <div className="st-card-head">
-        <div className="st-logo" style={{ ["--c" as string]: "var(--muted)" }}>{letter}</div>
+        <div className="st-logo mute">{letter}</div>
         <div>
           <div className="st-card-title">{name}</div>
           <div className="st-card-sub">Same model: mirror, branch, PR, push back on merge</div>
@@ -335,7 +335,7 @@ function ProxyCard() {
   return (
     <div className="st-card wide">
       <div className="st-card-head">
-        <div className="st-logo" style={{ ["--c" as string]: "var(--agent)" }}>⎇</div>
+        <div className="st-logo" style={{ ["--c" as string]: "var(--blue)" }}>G</div>
         <div>
           <div className="st-card-title">Any agent (API proxy)</div>
           <div className="st-card-sub">HubSpot- and Attio-compatible endpoints. Reads come from main; writes open PRs.</div>
@@ -384,7 +384,7 @@ export function Integrations() {
       <div className="st-head">
         <div>
           <h1>Integrations</h1>
-          <p>Mainline sits in front of the CRM you already use. It mirrors records onto main, routes agent writes through PRs, and pushes merged changes back.</p>
+          <p>Git CRM sits in front of the CRM you already use. It mirrors records onto main, routes agent writes through PRs, and pushes merged changes back.</p>
         </div>
       </div>
       <div className="st-cards">

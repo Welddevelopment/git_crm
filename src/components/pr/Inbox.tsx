@@ -141,9 +141,9 @@ export function Inbox() {
       <div className="pr-inbox-head">
         <div>
           <h1>Pull requests</h1>
-          <div className="pr-muted pr-small" style={{ marginTop: 4 }}>
+          <div className="pr-sub">
             Agents never write to your CRM. They open PRs against <span className="pr-branch">main</span>.
-            {needsAttention > 0 && <> · <strong style={{ color: "var(--text)" }}>{needsAttention}</strong> need a human</>}
+            {needsAttention > 0 && <> · <strong style={{ color: "var(--ink)", fontWeight: 600 }}>{needsAttention}</strong> need a human</>}
           </div>
         </div>
         <span className="pr-spacer" />
@@ -165,7 +165,7 @@ export function Inbox() {
             </button>
           ))}
           <span className="pr-spacer" />
-          <span className="pr-muted pr-small" style={{ paddingRight: 6 }}>
+          <span className="pr-small" style={{ paddingRight: 2, color: "var(--faint)" }}>
             <span className="pr-kbd">j</span> <span className="pr-kbd">k</span> move · <span className="pr-kbd">↵</span> open
           </span>
         </div>

@@ -172,7 +172,7 @@ export function MergeBox({
   );
 }
 
-const TIER_VAR: Record<RiskTier, string> = { auto: "var(--add)", review: "var(--warn)", block: "var(--del)" };
+const TIER_VAR: Record<RiskTier, string> = { auto: "var(--positive)", review: "var(--notice-ink)", block: "var(--negative)" };
 
 export function PolicyBox({ policy, eventCount }: { policy?: PolicyDecision; eventCount: number }) {
   if (!policy)
@@ -185,7 +185,7 @@ export function PolicyBox({ policy, eventCount }: { policy?: PolicyDecision; eve
   const per = Object.values(policy.perEvent || {});
   const tally = (t: RiskTier) => per.filter((p) => p.tier === t).length;
   return (
-    <div className="panel pr-box" style={{ borderColor: `color-mix(in srgb, ${TIER_VAR[policy.tier]} 40%, var(--border))` }}>
+    <div className="panel pr-box">
       <h3>
         <IconShield size={12} /> Policy <span className="pr-spacer" /> <TierBadge tier={policy.tier} />
       </h3>

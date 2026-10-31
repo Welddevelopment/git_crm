@@ -7,7 +7,7 @@ import { fmtAgo, useLive } from "./lib";
 
 type Level = AgentTrust["level"];
 const LEVEL_TONE: Record<Level, string> = { probation: "warn", trusted: "accent", autonomous: "add" };
-const LEVEL_COLOR: Record<Level, string> = { probation: "var(--warn)", trusted: "var(--accent)", autonomous: "var(--add)" };
+const LEVEL_COLOR: Record<Level, string> = { probation: "var(--series-3)", trusted: "var(--blue)", autonomous: "var(--positive)" };
 
 const LEVEL_MEANS: Record<Level, { short: string; bullets: string[] }> = {
   probation: {
@@ -61,14 +61,14 @@ function AgentRow({ a }: { a: FleetStatus["agents"][number] }) {
         </div>
         <div className="st-small st-muted" style={{ marginTop: 4 }}>{a.description}</div>
         <div className="st-tiny st-muted" style={{ marginTop: 4 }}>
-          {a.running ? <span style={{ color: "var(--add)" }}>● running</span> : <>last run {fmtAgo(a.lastRunAt)}</>}
+          {a.running ? <span className="st-ok">● running</span> : <>last run {fmtAgo(a.lastRunAt)}</>}
         </div>
       </div>
       <div>
         <div className="st-row" style={{ marginBottom: 6 }}>
           <span className={`st-badge ${LEVEL_TONE[t.level]}`}><span className="dot" />{t.level}</span>
           <span className="st-spacer" />
-          <span className="st-mono" style={{ fontWeight: 600 }}>{t.score.toFixed(2)}</span>
+          <span className="st-score">{t.score.toFixed(2)}</span>
         </div>
         <div className="st-bar" title={`trust score ${t.score.toFixed(2)}`}>
           <i style={{ width: `${pct}%`, ["--c" as string]: LEVEL_COLOR[t.level] }} />
@@ -76,19 +76,19 @@ function AgentRow({ a }: { a: FleetStatus["agents"][number] }) {
           <span className="tick" style={{ left: "85%" }} title="autonomous ≥ 0.85" />
         </div>
         <div className="st-stats">
-          <span><b style={{ color: "var(--add)" }}>{t.prsMerged}</b> merged</span>
-          <span><b style={{ color: t.prsReverted ? "var(--del)" : undefined }}>{t.prsReverted}</b> reverted</span>
+          <span><b className={t.prsMerged ? "pos" : undefined}>{t.prsMerged}</b> merged</span>
+          <span><b className={t.prsReverted ? "neg" : undefined}>{t.prsReverted}</b> reverted</span>
           <span><b>{t.prsClosed}</b> closed</span>
-          <span><b style={{ color: t.staleCount ? "var(--warn)" : undefined }}>{t.staleCount}</b> stale</span>
+          <span><b className={t.staleCount ? "warn" : undefined}>{t.staleCount}</b> stale</span>
         </div>
         <div className="st-tiny st-muted" style={{ marginTop: 4 }}>{t.prsOpened} opened · {decided} decided</div>
       </div>
       <div className="st-small">
         <div>{LEVEL_MEANS[t.level].short}</div>
-        <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--muted)" }}>
+        <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
           {LEVEL_MEANS[t.level].bullets.map((b, i) => <li key={i}>{b}</li>)}
         </ul>
-        {nx ? <div className="st-tiny" style={{ marginTop: 6, color: "var(--accent)" }}>Next: {nx}</div> : null}
+        {nx ? <div className="st-next">Next: {nx}</div> : null}
       </div>
     </div>
   );
@@ -115,8 +115,8 @@ export function Agents() {
       <div className="st-explainer" style={{ marginTop: 16, marginBottom: 0 }}>
         <strong>How trust is earned.</strong> Only decided PRs count: merged, reverted or closed. A PR still awaiting review isn&apos;t evidence either way,
         and going stale means the world changed, not that the agent was wrong.
-        <div className="st-mono st-small" style={{ marginTop: 6, color: "var(--text)" }}>score = (merged + 1) / (decided + 2) − 0.25 × reverted</div>
-        <div className="st-small" style={{ marginTop: 4 }}>Reverts cost trust twice: they count as a decided PR that didn&apos;t stick, and each one subtracts 0.25. One revert also rules out autonomous.</div>
+        <div><span className="st-formula">score = (merged + 1) / (decided + 2) − 0.25 × reverted</span></div>
+        <div className="st-small" style={{ marginTop: 8 }}>Reverts cost trust twice: they count as a decided PR that didn&apos;t stick, and each one subtracts 0.25. One revert also rules out autonomous.</div>
       </div>
 
       <div className="st-levels">

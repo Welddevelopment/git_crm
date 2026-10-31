@@ -368,8 +368,8 @@ export function FieldRow({
   return (
     <div className="pr-frow">
       <div className="f">
-        <span style={{ color: "var(--text)" }}>{field}</span>
-        {tag && <span className="pr-type" style={{ alignSelf: "flex-start", color: "var(--agent)", borderColor: "color-mix(in srgb,var(--agent) 40%,transparent)" }}>{tag}</span>}
+        <span style={{ color: "var(--ink)" }}>{field}</span>
+        {tag && <span className="pr-type" style={{ alignSelf: "flex-start", color: "var(--blue)" }}>{tag}</span>}
       </div>
       <div className={`v before ${noBefore ? "empty" : ""}`}>
         {!noBefore && <span className="sign">−</span>}

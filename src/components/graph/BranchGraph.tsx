@@ -19,11 +19,11 @@ function agentColor(id: string): string {
 }
 function mainColor(n: GraphMainNode): string {
   switch (n.kind) {
-    case "human": return "var(--human)";
-    case "merge": return "var(--agent)";
-    case "direct": return "var(--del)";
-    case "revert": return "var(--del)";
-    default: return "var(--muted)";
+    case "human": return "var(--ink-2)";
+    case "merge": return "var(--blue)";
+    case "direct": return "var(--negative)";
+    case "revert": return "var(--negative)";
+    default: return "var(--series-3)";
   }
 }
 const CHIP_CLASS: Record<ChipKind, string> = {
@@ -132,7 +132,7 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
       {!compact && (
         <div className={s.head}>
           <div className={s.title}>
-            <span>⎇ Branch graph</span>
+            <span>Branch graph</span>
             <b className="mono">main</b>
           </div>
           <div className={s.meta}>
@@ -166,7 +166,7 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
               {/* branches: lines layer, then marks layer on top */}
               {(["lines", "marks"] as const).map((layer) => <g key={layer}>{L.branches.map((bp) => {
                 const b = bp.b;
-                const c = agentColor(b.author);
+                const c = b.pr === focusPr ? "var(--g-focus)" : agentColor(b.author);
                 const dim = !!focusPr && b.pr !== focusPr;
                 const reverted = b.status === "reverted";
                 const closed = b.status === "closed";
@@ -180,7 +180,7 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
                     <path className={`${s.seg} ${fNew ? s.draw : ""}`} d={bp.forkPath} stroke={c} pathLength={1} style={closed ? { opacity: 0.45 } : undefined} />
                     {bp.endPath && (
                       <path className={`${s.seg} ${eNew ? s.draw : ""}`} d={bp.endPath} pathLength={1}
-                        stroke={reverted ? "var(--del)" : c}
+                        stroke={reverted ? "var(--negative)" : c}
                         style={eNew ? { animationDelay: fNew ? ".7s" : "0s" } : undefined} />
                     )}
                     {bp.tailPath && <path className={`${s.tail} ${fNew ? s.fadeIn : ""}`} d={bp.tailPath} stroke={c} style={fNew ? { animationDelay: ".6s" } : undefined} />}
@@ -190,10 +190,10 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
                     {/* PR head */}
                     <g className={fNew ? s.pop : ""} style={fNew ? { animationDelay: ".55s" } : undefined}>
                       {b.pr === focusPr && <circle className={s.headRing} cx={bp.headX} cy={bp.y} r={compact ? 7 : 9} stroke={c} />}
-                      <circle className={s.dot} cx={bp.headX} cy={bp.y} r={compact ? 3.4 : 5} fill={closed ? "var(--panel-2)" : c} stroke={closed ? c : undefined} />
+                      <circle className={s.dot} cx={bp.headX} cy={bp.y} r={compact ? 3.4 : 5} fill={closed ? "var(--bg)" : c} stroke={closed ? c : undefined} />
                     </g>
                     {!compact && (
-                      <rect className={fNew ? s.fadeIn : ""} x={bp.labelX - 3} y={bp.y - 8} width={bp.labelW - 4} height={16} rx={4} fill="var(--panel)" style={fNew ? { animationDelay: ".6s" } : undefined} />
+                      <rect className={fNew ? s.fadeIn : ""} x={bp.labelX - 3} y={bp.y - 8} width={bp.labelW - 4} height={16} rx={4} fill="var(--bg)" style={fNew ? { animationDelay: ".6s" } : undefined} />
                     )}
                     {!compact && (
                       <text className={`${s.label} ${closed ? s.closed : ""} ${fNew ? s.fadeIn : ""}`} x={bp.labelX} y={bp.y + 3.8} style={fNew ? { animationDelay: ".6s" } : undefined}>
@@ -211,7 +211,7 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
                     )}
                     {bp.chip && compact && (
                       <circle cx={bp.chipX} cy={bp.y} r={2.6}
-                        fill={bp.chip.kind === "stale" || bp.chip.kind === "block" ? "var(--del)" : bp.chip.kind === "auto" ? "var(--add)" : "var(--warn)"} />
+                        fill={bp.chip.kind === "stale" || bp.chip.kind === "block" ? "var(--negative)" : bp.chip.kind === "auto" ? "var(--positive)" : "var(--notice-ink)"} />
                     )}
                     </>}
                   </g>
@@ -242,7 +242,7 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
                 const last = L.main[L.main.length - 1]!;
                 return (
                   <g className={s.moveable} style={{ transform: `translate(${last.x}px, ${L.mainY}px)` }}>
-                    <text className={s.tick} x={0} y={-12} textAnchor="middle" style={{ fill: "var(--accent)" }}>HEAD</text>
+                    <text className={s.tick} x={0} y={-12} textAnchor="middle" style={{ fill: "var(--blue)" }}>HEAD</text>
                   </g>
                 );
               })()}
@@ -286,18 +286,18 @@ export default function BranchGraph({ height: heightProp, focusPr, compact = fal
       </div>
       {!compact && (
         <div className={s.legend}>
-          <span className={s.lg}><span className={s.lgLine} style={{ background: "var(--accent)" }} />main</span>
-          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--human)" }} />human</span>
-          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--agent)" }} />agent merge</span>
-          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--muted)" }} />seed / system</span>
-          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--del)" }} />revert</span>
+          <span className={s.lg}><span className={s.lgLine} style={{ background: "var(--blue)" }} />main</span>
+          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--ink-2)" }} />human</span>
+          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--blue)" }} />agent merge</span>
+          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--series-3)" }} />seed / system</span>
+          <span className={s.lg}><span className={s.lgDot} style={{ background: "var(--negative)" }} />revert</span>
           <span className={s.lgSep} />
           {KNOWN.map((a) => <span key={a} className={s.lg}><span className={s.lgLine} style={{ background: agentColor(a) }} />{a}</span>)}
           <span className={s.lgSep} />
-          <span className={`${s.lgChip}`} style={{ color: "var(--warn)" }}>needs review</span>
-          <span className={`${s.lgChip}`} style={{ color: "var(--del)" }}>● stale</span>
-          <span className={`${s.lgChip}`} style={{ color: "var(--warn)" }}>⚠ conflict</span>
-          <span className={`${s.lgChip}`} style={{ color: "var(--add)" }}>✓ auto</span>
+          <span className={`${s.lgChip}`} style={{ color: "var(--notice-ink)", background: "var(--notice-bg)" }}>needs review</span>
+          <span className={`${s.lgChip}`} style={{ color: "var(--negative)" }}>● stale</span>
+          <span className={`${s.lgChip}`} style={{ color: "var(--notice-ink)", background: "var(--notice-bg)" }}>⚠ conflict</span>
+          <span className={`${s.lgChip}`} style={{ color: "var(--positive)" }}>✓ auto</span>
         </div>
       )}
     </div>

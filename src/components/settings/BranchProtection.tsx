@@ -79,8 +79,8 @@ function AddRuleForm({ onAdd, existingIds }: { onAdd: (r: PolicyRule) => void; e
 
   return (
     <form className="st-form" onSubmit={submit}>
-      <div className="st-row" style={{ marginBottom: 8 }}>
-        <strong style={{ fontSize: 13 }}>Add a rule</strong>
+      <div className="st-row" style={{ marginBottom: 12 }}>
+        <span className="st-form-title">Add a rule</span>
         <span className="st-small st-muted">Blank match fields match anything. Most restrictive matching rule wins.</span>
       </div>
       <div className="st-form-grid">
@@ -117,7 +117,7 @@ function AddRuleForm({ onAdd, existingIds }: { onAdd: (r: PolicyRule) => void; e
           <TierSelect value={tier} onChange={setTier} />
         </div>
       </div>
-      <div className="st-row" style={{ marginTop: 10 }}>
+      <div className="st-row" style={{ marginTop: 12 }}>
         <button className="st-btn accent" type="submit">+ Add rule</button>
         {err ? <span className="st-err">{err}</span> : null}
       </div>
@@ -174,7 +174,7 @@ export function BranchProtection() {
   }
 
   async function resetDefaults() {
-    if (!window.confirm("Replace all rules with Mainline's defaults? Custom rules will be removed.")) return;
+    if (!window.confirm("Replace all rules with Git CRM's defaults? Custom rules will be removed.")) return;
     setRows(DEFAULT_RULES.map((rule) => ({ rule: structuredClone(rule), enabled: true })));
     await save(structuredClone(DEFAULT_RULES));
   }
@@ -215,7 +215,7 @@ export function BranchProtection() {
       <div className="st-explainer">
         Rules decide which agent changes <strong>auto-merge</strong>, <strong>need a human</strong>, or are <strong>blocked</strong>.
         Money, pipeline stage, identity merges and schema always need a human even for autonomous agents.
-        <div className="st-small" style={{ marginTop: 4 }}>The most restrictive matching rule wins; a change no rule matches needs review. Thresholds apply when |after − before| exceeds the value.</div>
+        <div className="st-small" style={{ marginTop: 6 }}>The most restrictive matching rule wins; a change no rule matches needs review. Thresholds apply when |after − before| exceeds the value.</div>
       </div>
 
       {error && !rows ? <div className="st-err">{error} <button className="st-btn sm" onClick={() => void reload()}>Retry</button></div> : null}
@@ -293,7 +293,7 @@ export function BranchProtection() {
           <button className="st-btn" disabled={!dirty || saving} onClick={() => { setRows((saved || []).map((rule) => ({ rule, enabled: true }))); setMsg(null); }}>Discard changes</button>
           <button className="st-btn ghost" disabled={saving} onClick={() => void resetDefaults()}>Reset to defaults</button>
           <span className="st-spacer" />
-          {dirty ? <span className="st-small" style={{ color: "var(--warn)" }}>Unsaved changes · live updates paused</span> : null}
+          {dirty ? <span className="st-small st-notice-ink">Unsaved changes · live updates paused</span> : null}
           {msg ? <span className={`st-small ${msg.tone === "ok" ? "st-ok" : "st-err"}`}>{msg.text}</span> : null}
         </div>
       ) : null}

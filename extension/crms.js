@@ -1,4 +1,4 @@
-/* Mainline extension: CRM registry. Record detection is by URL only; we never read the CRM's DOM.
+/* Git CRM extension: CRM registry. Record detection is by URL only; we never read the CRM's DOM.
  * Shared by the background service worker (importScripts) and the side panel (<script>).
  * One entry per CRM: { id, name, color, hosts(host, settings) -> bool, match(url) -> record | null }.
  * A record is { crm, crmName, objectType, kind, id, label, extra? } where:
@@ -93,7 +93,7 @@
     },
     {
       id: "mainline",
-      name: "Mainline",
+      name: "Git CRM",
       color: "#7c9cff",
       hosts: function (host, settings) {
         var own = hostOf((settings && settings.serverUrl) || "");
