@@ -1,8 +1,239 @@
 /** OWNER: agent builder "webwatch". Must work with NO API key (deterministic fallback) and be better with one. */
-import type { CRMAgent } from "../../core/types";
+import type { AgentContext, AgentProposal, CRMAgent, CRMState, EntityId, EvidenceDoc, EvidenceRef, FieldValue, NewEvent } from "../../core/types";
+import { detect, pageKind, pageLabel, type EmployeesFinding, type SignalFinding } from "./detectors";
+
+export { detect, pageKind } from "./detectors";
+
+const ACTOR = { kind: "agent", id: "webwatch", name: "Web watcher" } as const;
+const FIRECRAWL_URL = "https://api.firecrawl.dev/v1/scrape";
+const FIRECRAWL_TIMEOUT_MS = 10_000;
+
+// ---------- small state helpers (no engine import: agents read CRMState directly) ----------
+
+function resolve(state: CRMState, id: EntityId): EntityId {
+  let cur = id;
+  for (let i = 0; i < 16 && state.aliases?.[cur]; i++) cur = state.aliases[cur]!;
+  return cur;
+}
+
+function liveCompany(state: CRMState, id: EntityId) {
+  const rec = state.entities[resolve(state, id)];
+  if (!rec || rec.deleted || rec.type !== "company") return undefined;
+  return rec;
+}
+
+function hostOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url.includes("://") ? url : `https://${url}`).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+function asSignals(v: FieldValue | undefined): string[] {
+  if (Array.isArray(v)) return v.filter((s): s is string => typeof s === "string");
+  if (typeof v === "string" && v.trim()) return v.split(/[,;]\s*/).filter(Boolean);
+  return [];
+}
+
+/** Map each web doc to the company it's about: doc.entities first, then URL host ↔ company.domain. */
+function groupByCompany(state: CRMState, docs: EvidenceDoc[]): Map<EntityId, EvidenceDoc[]> {
+  const byDomain = new Map<string, EntityId>();
+  for (const rec of Object.values(state.entities)) {
+    if (rec.type !== "company" || rec.deleted || rec.mergedInto) continue;
+    const d = hostOf(typeof rec.attrs.domain === "string" ? rec.attrs.domain : undefined);
+    if (d) byDomain.set(d, rec.id);
+  }
+  const groups = new Map<EntityId, EvidenceDoc[]>();
+  for (const doc of docs) {
+    if (doc.kind !== "web") continue;
+    const ids = new Set<EntityId>();
+    for (const e of doc.entities ?? []) {
+      if (!e.startsWith("company:")) continue;
+      const rec = liveCompany(state, e);
+      if (rec) ids.add(rec.id);
+    }
+    if (ids.size === 0) {
+      const h = hostOf(doc.url);
+      const hit = h && (byDomain.get(h) ?? [...byDomain].find(([d]) => h.endsWith(`.${d}`))?.[1]);
+      if (hit) ids.add(hit);
+    }
+    for (const id of ids) groups.set(id, [...(groups.get(id) ?? []), doc]);
+  }
+  return groups;
+}
+
+// ---------- live mode (Firecrawl) ----------
+
+/** Fetch https://<domain> via Firecrawl. Any failure → null. Only called when FIRECRAWL_API_KEY is set. */
+export async function scrapeDomain(companyId: EntityId, domain: string, key: string, now: number): Promise<EvidenceDoc | null> {
+  const host = hostOf(domain);
+  if (!host) return null;
+  const url = `https://${host}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FIRECRAWL_TIMEOUT_MS);
+  try {
+    const res = await fetch(FIRECRAWL_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+      body: JSON.stringify({ url, formats: ["markdown"] }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { success?: boolean; data?: { markdown?: string; metadata?: { title?: string; sourceURL?: string } } };
+    const body = json?.data?.markdown;
+    if (json?.success === false || typeof body !== "string" || !body.trim()) return null;
+    const day = new Date(now).toISOString().slice(0, 10);
+    return {
+      id: `web_${companyId.replace(/^company:/, "")}_live_${day}`,
+      kind: "web",
+      ts: now,
+      title: json.data?.metadata?.title || host,
+      url: json.data?.metadata?.sourceURL || url,
+      body,
+      entities: [companyId],
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function liveDocs(ctx: AgentContext, covered: Set<EntityId>): Promise<EvidenceDoc[]> {
+  const key = typeof process !== "undefined" ? process.env.FIRECRAWL_API_KEY : undefined;
+  if (!key) return [];
+  const targets = Object.values(ctx.state.entities).filter(
+    (r) => r.type === "company" && !r.deleted && !r.mergedInto && !covered.has(r.id) && typeof r.attrs.domain === "string" && r.attrs.domain,
+  );
+  const docs = await Promise.all(targets.map((r) => scrapeDomain(r.id, String(r.attrs.domain), key, ctx.now()).catch(() => null)));
+  const ok = docs.filter((d): d is EvidenceDoc => d !== null);
+  if (targets.length) ctx.log(`live: scraped ${ok.length}/${targets.length} homepages via Firecrawl`);
+  return ok;
+}
+
+// ---------- proposal building ----------
+
+const ref = (doc: EvidenceDoc, f: { quote: string; claim: string }): EvidenceRef => ({ docId: doc.id, quote: f.quote, claim: f.claim });
+
+interface CompanyPlan {
+  companyId: EntityId;
+  name: string;
+  newSignals: { f: SignalFinding; doc: EvidenceDoc }[];
+  employees?: { f: EmployeesFinding; doc: EvidenceDoc; prev: FieldValue | undefined };
+  signalsPrev: string[];
+  hadSignals: boolean;
+  liveDocs: EvidenceDoc[];
+}
+
+function planCompany(state: CRMState, companyId: EntityId, docs: EvidenceDoc[], live: Set<string>): CompanyPlan | null {
+  const rec = state.entities[companyId];
+  if (!rec) return null;
+  const name = typeof rec.attrs.name === "string" && rec.attrs.name ? rec.attrs.name : companyId;
+  const existing = asSignals(rec.attrs.signals);
+  const have = new Set(existing);
+  const newSignals: CompanyPlan["newSignals"] = [];
+  let employees: CompanyPlan["employees"];
+
+  // oldest → newest, so the latest snapshot wins for headcount
+  const ordered = [...docs].sort((a, b) => a.ts - b.ts || a.id.localeCompare(b.id));
+  for (const doc of ordered) {
+    for (const f of detect(doc)) {
+      if (f.kind === "signal") {
+        if (have.has(f.signal)) continue;
+        have.add(f.signal);
+        newSignals.push({ f, doc });
+      } else {
+        employees = { f, doc, prev: rec.attrs.employees };
+      }
+    }
+  }
+  if (employees && Number(employees.prev) === employees.f.value) employees = undefined;
+  newSignals.sort((a, b) => a.f.signal.localeCompare(b.f.signal));
+  if (!newSignals.length && !employees) return null;
+  const usedLive = ordered.filter((d) => live.has(d.id) && (newSignals.some((s) => s.doc === d) || employees?.doc === d));
+  return { companyId, name, newSignals, employees, signalsPrev: existing, hadSignals: rec.attrs.signals !== undefined, liveDocs: usedLive };
+}
+
+function buildProposal(p: CompanyPlan): AgentProposal {
+  const events: NewEvent[] = [];
+  // live-scraped pages aren't in the doc store yet: attach them so the evidence resolves on merge
+  for (const doc of p.liveDocs) {
+    events.push({ actor: ACTOR, op: { type: "evidence.attach", doc }, reason: `Snapshot of ${doc.url ?? doc.title}`, evidence: [{ docId: doc.id, claim: "Live website snapshot (Firecrawl)" }] });
+  }
+  if (p.newSignals.length) {
+    const value = [...new Set([...p.signalsPrev, ...p.newSignals.map((s) => s.f.signal)])].sort();
+    events.push({
+      actor: ACTOR,
+      op: { type: "field.set", entity: p.companyId, field: "signals", value, ...(p.hadSignals ? { prev: p.signalsPrev } : {}) },
+      reason: p.newSignals.map((s) => s.f.claim).join("; "),
+      evidence: p.newSignals.map((s) => ref(s.doc, s.f)),
+    });
+  }
+  if (p.employees) {
+    const { f, doc, prev } = p.employees;
+    events.push({
+      actor: ACTOR,
+      op: { type: "field.set", entity: p.companyId, field: "employees", value: f.value, ...(prev !== undefined ? { prev } : {}) },
+      reason: f.claim,
+      evidence: [ref(doc, f)],
+    });
+  }
+
+  const parts = [
+    ...p.newSignals.map((s) => `+${s.f.signal}`),
+    ...(p.employees ? [`employees ${p.employees.prev ?? "?"}→${p.employees.f.value}`] : []),
+  ];
+  const lines = [
+    `Website changes detected for **${p.name}**:`,
+    ...p.newSignals.map((s) => `- \`${s.f.signal}\` — ${s.f.claim} ("${s.f.quote}")`),
+    ...(p.employees ? [`- employees ${p.employees.prev ?? "unset"} → ${p.employees.f.value} — ${p.employees.f.claim} ("${p.employees.f.quote}")`] : []),
+  ];
+  return { title: `${p.name}: ${parts.join(", ")}`, description: lines.join("\n"), events };
+}
+
+async function llmSummary(ctx: AgentContext, p: CompanyPlan): Promise<string | null> {
+  try {
+    const facts = [
+      ...p.newSignals.map((s) => `${s.f.claim} — "${s.f.quote}" (${pageLabel(pageKind(s.doc))})`),
+      ...(p.employees ? [`${p.employees.f.claim} (CRM had ${p.employees.prev ?? "nothing"})`] : []),
+    ].join("\n");
+    const out = await ctx.llm({
+      system: "You are a sales-intelligence analyst. Reply with ONE sentence (max 30 words) naming the single most notable website change and why a seller should care. No preamble.",
+      prompt: `Account: ${p.name}\nDetected changes:\n${facts}`,
+      maxTokens: 120,
+    });
+    const s = out?.trim();
+    return s ? s.replace(/\s+/g, " ") : null;
+  } catch {
+    return null;
+  }
+}
+
 export const webwatchAgent: CRMAgent = {
   id: "webwatch",
-  name: "webwatch",
-  description: "TODO",
-  async run() { return []; },
+  name: "Web watcher",
+  description: "Watches each account's website — careers, pricing, about pages — and turns changes into signals",
+  async run(ctx) {
+    const groups = groupByCompany(ctx.state, ctx.docs);
+    const fetched = await liveDocs(ctx, new Set(groups.keys()));
+    const liveIds = new Set(fetched.map((d) => d.id));
+    for (const [id, docs] of groupByCompany(ctx.state, fetched)) groups.set(id, [...(groups.get(id) ?? []), ...docs]);
+
+    const plans = [...groups]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([id, docs]) => planCompany(ctx.state, id, docs, liveIds))
+      .filter((p): p is CompanyPlan => p !== null);
+
+    const proposals: AgentProposal[] = [];
+    for (const plan of plans) {
+      const prop = buildProposal(plan);
+      const summary = await llmSummary(ctx, plan);
+      if (summary) prop.description = `${summary}\n\n${prop.description}`;
+      proposals.push(prop);
+    }
+    ctx.log(`scanned ${groups.size} account(s), ${proposals.length} with new signals`);
+    return proposals;
+  },
 };
