@@ -1,15 +1,18 @@
-/* Lead-owned shell. Nav links point at routes owned by W9 (/prs) and W10 (/, /crm, /timeline, /demo). */
+/* Lead-owned shell: Calendly-B sidebar + top bar. Pages render inside .ml-content. */
 import "./globals.css";
 import type { ReactNode } from "react";
-export const metadata = { title: "Mainline — PRs for your CRM agents" };
+import { Sidebar, TopBar } from "./Nav";
+export const metadata = { title: "Git CRM — PRs for your CRM agents" };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en"><body>
-      <nav style={{ display: "flex", gap: 20, alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--border)" }}>
-        <strong>⎇ Mainline</strong>
-        <a href="/">Overview</a><a href="/prs">Pull requests</a><a href="/crm">CRM (main)</a><a href="/timeline">Time travel</a><a href="/demo">Demo</a><a href="/extension">Extension</a><a href="/settings">Settings</a>
-      </nav>
-      <main style={{ padding: 20 }}>{children}</main>
+      <div className="ml-shell">
+        <Sidebar />
+        <div className="ml-main">
+          <TopBar />
+          <main className="ml-content">{children}</main>
+        </div>
+      </div>
     </body></html>
   );
 }
