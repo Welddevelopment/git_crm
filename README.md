@@ -5,7 +5,7 @@
 Git CRM is a version-control layer that sits in front of a CRM. Every AI agent that wants to change customer data (an inbox agent, a dedup agent, an enrichment agent, a schema agent) works on its own **branch** and opens a **pull request**. Git CRM three-way-merges those PRs into `main`, catches conflicts between agents, holds risky changes for a human, flags PRs whose evidence has gone **stale**, and lets you **revert**, **blame** and **time-travel** the whole CRM.
 
 > 🔗 **Live app:** https://gitcrm-production.up.railway.app · **Landing page:** [`/landing`](https://gitcrm-production.up.railway.app/landing)
-> Built in one evening at **Night Hack by Founders, Inc.** (Oct 30, 2026). No API keys needed to try it.
+> Built in one evening at **Night Hack by Founders, Inc.** (Oct 30, 2026). No API keys needed to try it. **[Try it today ↓](#try-it-today)**
 
 ---
 
@@ -32,8 +32,23 @@ Existing tools offer an **approve-this-diff queue**: one agent, one proposal at 
 | **Branch protection for revenue** | 20 default rules, editable in Settings. Enrichment auto-merges; deal amount, stage, close date and identity merges need a human; deletes are blocked. |
 | **Agents earn trust** | Each agent has a track record (merged / reverted / stale) and moves from probation → trusted → autonomous. Money, pipeline stage, identity merges and schema always need a human. |
 | **Schema is data** | Schema changes live in the same event log, so "add `deal.procurementContact` and backfill 4 deals" is a PR you can review, merge and revert. |
-| **Revert, blame, time travel** | Every field has a full history (who, when, why, evidence). Revert any PR with inverse events. Drag a slider to see the CRM as it was at any point. |
+| **Revert, blame, time travel** | Every field has a full history (who, when, why, evidence). Revert any merged PR, auto-merged ones included, with inverse events; a reverted agent drops back to probation. Drag a slider to see the CRM as it was at any point. |
+| **Restore to a point in time** | On the time-travel page, pick a moment and click *Restore to this point*. Everything since is undone as one merged PR (fields set back, deleted and merged-away records brought back, newer records removed). History is never rewritten, and reverting that PR undoes the restore. Schema additions are kept. |
+| **Triage at agent scale** | Every PR is categorized from its diff (money & stage, merges & deletes, schema, deal updates, new records, data cleanup, enrichment). Filter by category or *Needs you*, group by category or agent, and approve a whole group in one click. Bulk approve skips stale, conflicting and blocked PRs; record merges and schema changes are always one at a time. |
 | **Live branch graph** | `main` and every agent branch drawn as a git graph that forks, merges and reverts as PRs stream in. |
+
+## The agents
+
+Four reference agents ship with Git CRM. Each works with no API key using deterministic rules; with `ANTHROPIC_API_KEY` set, Claude fills in what the rules miss. None of them can write to the CRM: they can only open PRs.
+
+| Agent | What it does | Example PR from the demo |
+|---|---|---|
+| **Inbox** | Reads email threads and keeps contacts, deals and stages current, quoting the email as evidence | Acme: Discovery → Negotiation, $20k → $45k |
+| **Hygiene** | Finds duplicate contacts and normalizes names, titles, phones | Merge "Priya S." into "Priya Sharma" |
+| **Schema** | Notices information the CRM has no field for and proposes the field with a backfill | Add `deal.procurementContact`, fill 4 deals |
+| **Web watcher** | Watches account websites (careers, pricing, about) and turns changes into signals; scrapes real sites via Firecrawl | Northwind headcount 180 → 220 (auto-merges) |
+
+Where users reach them: **Demo console** (`/demo`, run all four in chaos or governed mode), **Records → Watch account by URL** (`/crm`, sends the web watcher to any real website), **Settings → Agents & trust** (level, score, merged and reverted PRs) and **Settings → Branch protection** (what auto-merges). Agents you already run plug in through the [drop-in API proxy](#use-it-with-your-crm); their writes get the same policy, trust, conflict and revert rules.
 
 ## Demo (90 seconds)
 
@@ -45,7 +60,7 @@ Existing tools offer an **approve-this-diff queue**: one agent, one proposal at 
 6. Merge, then **one-click revert**, the bad Alex Chen merge. Both contacts come back.
 7. The schema agent proposes `deal.procurementContact`; merging it backfills 4 deals.
 8. A **conflict** on Northwind headcount (220 from the web watcher vs 250 from the inbox agent): pick a side, merge.
-9. **Time travel** `main` back to before chaos mode.
+9. **Time travel** `main` back to before chaos mode, then **Restore to this point**: the forecast is back to $600k, and the restore is itself one revertible PR.
 
 ## Pages
 
@@ -53,9 +68,9 @@ Existing tools offer an **approve-this-diff queue**: one agent, one proposal at 
 |---|---|
 | [`/`](https://gitcrm-production.up.railway.app/) | Overview: the pitch, live branch graph, agent fleet |
 | [`/landing`](https://gitcrm-production.up.railway.app/landing) | Marketing landing page |
-| [`/prs`](https://gitcrm-production.up.railway.app/prs) | PR inbox; each PR shows the diff, evidence, conflicts, staleness and policy, with merge / close / revert |
+| [`/prs`](https://gitcrm-production.up.railway.app/prs) | PR inbox with category filters, *Needs you*, group by category/agent and bulk approve; each PR shows the diff, evidence, conflicts, staleness and policy, with merge / close / revert |
 | [`/crm`](https://gitcrm-production.up.railway.app/crm) | The CRM as it is on `main`, with per-field blame |
-| [`/timeline`](https://gitcrm-production.up.railway.app/timeline) | Time-travel slider over the event log |
+| [`/timeline`](https://gitcrm-production.up.railway.app/timeline) | Time-travel slider over the event log, with *Restore to this point* |
 | [`/demo`](https://gitcrm-production.up.railway.app/demo) | Demo console: run chaos / governed fleets, inject documents, reset |
 | [`/settings`](https://gitcrm-production.up.railway.app/settings) | Integrations (HubSpot, Attio, API proxy), editable branch protection, agents and trust |
 | [`/extension`](https://gitcrm-production.up.railway.app/extension) | Chrome extension install guide |
@@ -91,6 +106,50 @@ flowchart LR
 - **Adapters** (`src/adapters/*`, `src/integrations/*`): merged changes on `main` are written to the target CRM. The built-in CRM is the default; HubSpot and Attio connectors sync both ways.
 
 The LLM only ever **proposes**. Correctness comes from the engine.
+
+## Try it today
+
+### 1. Live demo (2 minutes, nothing to install)
+
+A synthetic CRM (10 companies, 25 contacts, 10 deals, $600k pipeline) on our server. It's one shared world, so click **Reset world** first.
+
+1. Open the [demo console](https://gitcrm-production.up.railway.app/demo) and click **Reset world**.
+2. **Run chaos**: four agents write straight to the CRM. The forecast drifts to $625k and two different Alex Chens get merged.
+3. **Reset world**, then **Run governed**: same agents, now on branches. PRs stream in; low-risk ones auto-merge.
+4. Open [Pull requests](https://gitcrm-production.up.railway.app/prs): filter by *Needs you*, group by category, resolve the Northwind conflict, merge or close.
+5. Back in the console, **Inject email**: "Acme is pausing" lands and the open Acme PR flips to stale on its own.
+6. Open [Time travel](https://gitcrm-production.up.railway.app/timeline): drag back and **Restore to this point**. Revert any merged PR from its page.
+
+### 2. On your laptop (5 minutes, Node 20+)
+
+```bash
+git clone https://github.com/Welddevelopment/git_crm
+cd git_crm
+npm install
+npm run dev          # http://localhost:3000/demo, then follow the steps above
+```
+
+No keys needed. Put `ANTHROPIC_API_KEY` in `.env.local` to switch agents and the staleness judge to Claude.
+
+### 3. With your own Attio or HubSpot (~15 minutes)
+
+Self-host one copy per workspace; your team keeps working in their CRM.
+
+1. **Deploy your own copy.** Railway works out of the box (`railway.json` is included), or any Node host: `npm run build && npm start`.
+2. **Create a CRM token and set it on the server.** Attio: an access token with *records read-write* and *object configuration read* → `ATTIO_TOKEN`. HubSpot: a private app with companies, contacts and deals read + write → `HUBSPOT_TOKEN`.
+3. **Settings → Integrations → Import now.** Pulls your companies, people and deals into `main`, then syncs edits from your CRM every 20 seconds.
+4. **Install the Chrome extension** ([guide](https://gitcrm-production.up.railway.app/extension)) and set *Git CRM server* to your URL. Pending PRs appear next to the record in Attio or HubSpot.
+5. **Route your agents through the proxy:** swap their base URL for `https://<your-host>/api/proxy/attio/v2/…` (or `/api/proxy/hubspot/…`) and add an `x-mainline-agent: <name>` header.
+
+**Once it's connected:** your team edits in Attio or HubSpot as normal and their edits sync onto `main` within ~20 seconds (which is what makes conflicts and staleness real). Agents get a `202` and a PR number instead of writing. Low-risk changes auto-merge; money, stage, dedups and schema wait for a person. You approve in Git CRM or on the record via the side panel, and approved changes, reverts and restores are written back to your CRM.
+
+**Not there yet:**
+
+- **One workspace per deployment, no login.** The CRM token is a server setting and anyone with your URL can merge. "Connect Attio" OAuth and accounts are next.
+- **Only agents routed through the proxy are governed.** An agent holding its own CRM token can still bypass Git CRM.
+- **The proxy covers companies, people and deals** on core fields (name, domain, headcount, industry, email, title, phone, amount, stage). Notes, tasks, lists and custom attributes pass by.
+- **The inbox agent reads the demo emails**; there's no Gmail connection yet. Human edits made directly in your CRM sync straight to `main` (they aren't PRs), but restore-to-a-point covers them.
+- **Without `MAINLINE_DATA_DIR`** and a volume, history lives in memory and resets on restart.
 
 ## Use it with your CRM
 
@@ -130,7 +189,7 @@ An Attio-compatible proxy lives at `/api/proxy/attio/v2/objects/{object}/records
 ```bash
 npm install
 npm run dev                          # http://localhost:3000
-npm test                             # 219 tests: engine, agents, store, API, integrations
+npm test                             # 225 tests: engine, agents, store, API, integrations, restore, triage
 npm run typecheck
 npx tsx scripts/run-fleet.ts         # run the governed agent fleet from the terminal
 npx tsx scripts/run-fleet.ts --chaos # same agents writing straight to the CRM
@@ -153,6 +212,7 @@ Everything works without any keys: agents and the staleness judge fall back to d
 src/core/types.ts                  domain model (events, branches, PRs, conflicts, policy)
 src/core/engine/state.ts           fold, time travel, blame, diff
 src/core/engine/merge.ts           three-way merge, conflicts, semantic rebase, revert
+src/core/engine/restore.ts         point-in-time restore plan
 src/core/staleness.ts              stale-decision detection
 src/core/policy.ts                 branch protection + agent trust
 src/server/repo.ts                 application service (branch → PR → analyze → merge)
@@ -161,6 +221,7 @@ src/agents/{inbox,hygiene,schema,webwatch}
 src/seed/**                        demo world: 10 companies, 25 contacts, 10 deals, 30 emails, 7 web pages
 src/app/**                         UI: overview, PRs, CRM, time travel, demo console, settings
 src/components/graph/              live branch graph
+src/components/pr/categorize.ts    PR triage: categories, needs-you, bulk-approve rules
 src/integrations/{hubspot,attio}   sync, mapping, API-compatible proxies, seeding
 src/adapters/**                    write-back to the target CRM on merge
 extension/                         Chrome extension (MV3 side panel, no build step)
