@@ -1,10 +1,13 @@
 "use client";
-/** OWNER: W10. Overview: hero, live stats, fleet panel, recent activity. */
+/** OWNER: W10. Overview: hero, how it works, live branch graph, live stats, fleet panel, recent activity, differentiators. */
 import { useMemo, useRef, useState } from "react";
 import s from "./crm.module.css";
 import { src, useLive } from "./data";
 import { describeTimeline, pipelineTotal, prStats, usd } from "./lib";
 import { FeedLineView, FleetPanel, LiveDot, MockNotice, Stat } from "./ui";
+import BranchGraph from "@/components/graph/BranchGraph";
+import { Hero, HowItWorks, WhyNotQueue } from "@/components/home/sections";
+import h from "@/components/home/home.module.css";
 
 export default function Overview() {
   const { data, error } = useLive(async () => {
@@ -40,22 +43,27 @@ export default function Overview() {
 
   return (
     <div className={s.page}>
-      <div className={s.headerRow}>
-        <div>
-          <div className={s.row}><span className={s.eyebrow}>Mainline · main</span><LiveDot /><MockNotice /></div>
-          <h1 className={s.hero}>Agents never write to your CRM. <em>They open PRs against it.</em></h1>
-          <div className={s.sub}>Every agent works on its own branch. Changes come with evidence, get checked for conflicts and staleness, and only reach main through review or a trust policy.</div>
+      <Hero badges={<><LiveDot /><MockNotice /></>} />
+      <HowItWorks />
+
+      <section>
+        <div className={h.graphHead}>
+          <div className={h.graphTitle}>
+            <h2>main, live</h2>
+            <span className={h.graphHint}>every agent branch, PR and merge as it happens</span>
+          </div>
+          <div className={s.row}>
+            {msg ? <span className={s.small} style={{ color: msg.tone === "add" ? "var(--add)" : msg.tone === "del" ? "var(--del)" : "var(--muted)" }}>{msg.text}</span> : null}
+            <button className={`${s.btn} ${s.btnPrimary}`} disabled={anyRunning} onClick={() => run("governed")}>
+              {busy === "governed" ? <span className={s.spinner} /> : "⎇"} Run fleet (governed)
+            </button>
+            <button className={`${s.btn} ${s.btnDanger}`} disabled={anyRunning} onClick={() => run("chaos")}>
+              {busy === "chaos" ? <span className={s.spinner} /> : "⚠"} Run fleet (chaos)
+            </button>
+          </div>
         </div>
-        <div className={s.row}>
-          <button className={`${s.btn} ${s.btnPrimary}`} disabled={anyRunning} onClick={() => run("governed")}>
-            {busy === "governed" ? <span className={s.spinner} /> : "⎇"} Run fleet (governed)
-          </button>
-          <button className={`${s.btn} ${s.btnDanger}`} disabled={anyRunning} onClick={() => run("chaos")}>
-            {busy === "chaos" ? <span className={s.spinner} /> : "⚠"} Run fleet (chaos)
-          </button>
-        </div>
-      </div>
-      {msg ? <div className={s.small} style={{ color: msg.tone === "add" ? "var(--add)" : msg.tone === "del" ? "var(--del)" : "var(--muted)", marginTop: -8 }}>{msg.text}</div> : null}
+        <BranchGraph height={260} />
+      </section>
       {error ? <div className={s.err}>{error}</div> : null}
 
       <div className={s.stats}>
@@ -79,6 +87,8 @@ export default function Overview() {
           </div>
         </div>
       </div>
+
+      <WhyNotQueue />
     </div>
   );
 }
