@@ -1,8 +1,8 @@
-# ⎇ Mainline
+# Git CRM
 
 **Agents never write to your CRM. They open pull requests against it.**
 
-Mainline is a version-control layer that sits in front of a CRM. Every AI agent that wants to change customer data (an inbox agent, a dedup agent, an enrichment agent, a schema agent) works on its own **branch** and opens a **pull request**. Mainline three-way-merges those PRs into `main`, detects conflicts between agents, holds risky changes for a human, lets you **revert** any change and **time-travel** the whole CRM, and flags PRs whose evidence has gone **stale** before anyone merges them.
+Git CRM is a version-control layer that sits in front of a CRM. Every AI agent that wants to change customer data (an inbox agent, a dedup agent, an enrichment agent, a schema agent) works on its own **branch** and opens a **pull request**. Git CRM three-way-merges those PRs into `main`, detects conflicts between agents, holds risky changes for a human, lets you **revert** any change and **time-travel** the whole CRM, and flags PRs whose evidence has gone **stale** before anyone merges them.
 
 > 🔗 **Live demo:** https://gitcrm-production.up.railway.app · Built in one evening at **Night Hack by Founders, Inc.** (Oct 30, 2026)
 
@@ -19,7 +19,7 @@ Companies are adding AI agents to their CRM fast: call-notes agents, enrichment 
 
 Existing tools offer an **approve-this-diff queue** (one agent, one proposal at a time, against live data). That doesn't survive many agents working **concurrently**.
 
-## What Mainline does
+## What Git CRM does
 
 | | |
 |---|---|
@@ -76,17 +76,17 @@ The LLM only ever **proposes**. Correctness comes from the engine.
 
 ## Use it with your CRM
 
-Mainline is a layer, not a new CRM. Reps keep working in HubSpot or Attio; agents keep calling what looks like their CRM's API.
+Git CRM is a layer, not a new CRM. Reps keep working in HubSpot or Attio; agents keep calling what looks like their CRM's API.
 
 **1. Chrome extension: review agent changes on the CRM record itself.**
-Open any deal, contact or company in HubSpot or Attio (Salesforce and Pipedrive pages are recognised too) and the Mainline side panel shows that record's pending agent PRs: field diff, evidence quotes, policy and staleness, **Approve & merge / Reject**, plus per-field history. It reads only the tab URL, never the page.
+Open any deal, contact or company in HubSpot or Attio (Salesforce and Pipedrive pages are recognised too) and the Git CRM side panel shows that record's pending agent PRs: field diff, evidence quotes, policy and staleness, **Approve & merge / Reject**, plus per-field history. It reads only the tab URL, never the page.
 
 - Download: [`/mainline-extension.zip`](https://gitcrm-production.up.railway.app/mainline-extension.zip) (or the [`extension/`](extension) folder)
 - Install: unzip → `chrome://extensions` → **Developer mode** → **Load unpacked** → pick `mainline-extension` → click the violet icon
 - Guide: [`/extension`](https://gitcrm-production.up.railway.app/extension). Not on the Chrome Web Store yet (store review takes days).
 
 **2. Connectors: mirror your CRM into `main`, write merged PRs back.**
-Set `HUBSPOT_TOKEN` (private app, `crm.objects.companies/contacts/deals` read + write) and/or `ATTIO_TOKEN` (records read-write, object configuration read). Mainline imports records, polls for human edits (which is what makes conflicts and staleness real), and writes merged changes back. **Settings → Integrations** has one-click *Seed demo data* and *Import now*.
+Set `HUBSPOT_TOKEN` (private app, `crm.objects.companies/contacts/deals` read + write) and/or `ATTIO_TOKEN` (records read-write, object configuration read). Git CRM imports records, polls for human edits (which is what makes conflicts and staleness real), and writes merged changes back. **Settings → Integrations** has one-click *Seed demo data* and *Import now*.
 
 **3. Drop-in API proxy: your existing agents don't change.**
 Swap one base URL and every write becomes a reviewable PR:
