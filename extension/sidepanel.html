@@ -25,6 +25,16 @@
     </button>
   </header>
 
+  <nav id="tabs" class="tabs" role="tablist" aria-label="Git CRM views">
+    <button class="tab" role="tab" data-tab="record">Record</button>
+    <button class="tab" role="tab" data-tab="prs">PRs</button>
+    <button class="tab" role="tab" data-tab="graph">Graph</button>
+    <button class="tab" role="tab" data-tab="timeline">Time travel</button>
+    <button class="tab" role="tab" data-tab="crm">Records</button>
+    <button class="tab" role="tab" data-tab="settings">Agents &amp; rules</button>
+    <button class="tab" role="tab" data-tab="demo">Demo</button>
+  </nav>
+
   <section id="settings" class="settings" hidden>
     <h2>Settings</h2>
     <label>Git CRM server
@@ -49,6 +59,8 @@
   <main id="app" aria-live="polite">
     <div class="skel"></div><div class="skel"></div><div class="skel"></div>
   </main>
+
+  <div id="frames" class="frames" hidden></div>
 
   <div id="toast" class="toast" hidden></div>
 

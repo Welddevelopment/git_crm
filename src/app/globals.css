@@ -59,3 +59,8 @@ button{font:inherit;cursor:pointer}
 .ml-top .live i{width:7px;height:7px;border-radius:50%;background:var(--positive);display:inline-block}
 .ml-content{padding:24px}
 @media (max-width:900px){.ml-shell{grid-template-columns:1fr}.ml-side{position:static;height:auto;border-right:0;border-bottom:var(--hairline)}}
+
+/* embed mode (?embed=1): Chrome extension side panel iframes, ~360–420px wide */
+html[data-embed="1"] .ml-side,html[data-embed="1"] .ml-top{display:none}
+html[data-embed="1"] .ml-shell{grid-template-columns:1fr;min-height:0}
+html[data-embed="1"] .ml-content{padding:12px}

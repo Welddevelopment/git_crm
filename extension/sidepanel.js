@@ -29,7 +29,13 @@
     sig: "",
     loading: false,
     loadSeq: 0,
+    tab: "record", // record | prs | graph | timeline | crm | settings | demo
   };
+
+  // Tabs: "record"/"prs" are rendered natively; the rest iframe the web app in embed mode.
+  var FRAME_TABS = { graph: "/", timeline: "/timeline", crm: "/crm", settings: "/settings", demo: "/demo" };
+  var FRAME_TITLES = { graph: "Branch graph", timeline: "Time travel", crm: "Records", settings: "Agents & rules", demo: "Demo console" };
+  var frames = {}; // tab -> { el, src } (created on first open, hidden — not destroyed — when switching)
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -216,7 +222,7 @@
   /** Returns a view model: { mode: "record"|"queue"|"pr", ... } or { mode:"error" } */
   async function fetchView() {
     var ctx = S.ctx || { crm: null, record: null };
-    var rec = ctx.record;
+    var rec = S.tab === "prs" ? null : ctx.record; // PRs tab: always the global queue
 
     // Git CRM's own PR page: focus that PR, plus the rest of the queue.
     if (rec && rec.crm === "mainline" && rec.kind === "pr") {
@@ -601,10 +607,10 @@
       html += queueSection(v.prs, "Other open PRs");
     } else {
       var crm = v.ctx && v.ctx.crm;
-      if (crm && crm.id !== "mainline") {
+      if (crm && crm.id !== "mainline" && S.tab !== "prs") {
         html += '<div class="notice">' + crmChip(crm) + "<span>Open a deal, contact or company in " + h(crm.name) + " to see its agent changes here.</span></div>";
       }
-      html += queueSection(v.prs, "Open PR queue", true);
+      html += queueSection(v.prs, S.tab === "prs" ? "All open PRs" : "Open PR queue", true);
     }
     html += '<div class="foot"><span>' + h(base().replace(/^https?:\/\//, "")) + '</span><a href="' + h(base() + "/prs") + '" target="_blank" rel="noopener">All PRs ↗</a></div>';
 
@@ -702,9 +708,10 @@
     $("s-msg").textContent = "";
     $("s-msg").className = "s-msg";
     $("settings").hidden = false;
+    $("frames").hidden = true;
     $("s-reviewer").focus();
   }
-  function closeSettings() { $("settings").hidden = true; }
+  function closeSettings() { $("settings").hidden = true; $("frames").hidden = !FRAME_TABS[S.tab]; }
   function readForm() {
     var url = $("s-server").value.trim().replace(/\/+$/, "") || DEFAULTS.serverUrl;
     if (!/^https?:\/\//.test(url)) url = "https://" + url;
@@ -725,7 +732,7 @@
     var changedServer = f.serverUrl !== S.settings.serverUrl;
     S.settings = Object.assign({}, S.settings, f);
     try { chrome.storage.sync.set(f); } catch (e) { /* ignore */ }
-    if (changedServer) { S.lookupMissing = false; S.details = {}; S.seen = null; }
+    if (changedServer) { S.lookupMissing = false; S.details = {}; S.seen = null; resetFrames(); }
     closeSettings();
     toast("Settings saved", "ok");
     load({ spin: true, reset: true });
@@ -745,7 +752,7 @@
     var prevKey = S.ctx ? JSON.stringify([S.ctx.crm && S.ctx.crm.id, S.ctx.record]) : null;
     S.ctx = ctx;
     var key = JSON.stringify([ctx.crm && ctx.crm.id, ctx.record]);
-    if (key !== prevKey) {
+    if (key !== prevKey && S.tab === "record") {
       S.view = null;
       S.sig = "";
       $("app").innerHTML = '<div class="skel"></div><div class="skel"></div>';
@@ -763,17 +770,96 @@
   function schedule() {
     clearTimeout(pollT);
     pollT = setTimeout(function tick() {
-      if (document.visibilityState === "visible" && !S.loading && !Object.keys(S.busy).length) load();
+      if (document.visibilityState === "visible" && !S.loading && !Object.keys(S.busy).length && !FRAME_TABS[S.tab]) load();
       schedule();
     }, POLL_MS);
   }
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") load(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && !FRAME_TABS[S.tab]) load(); });
   // re-render relative times occasionally
   setInterval(function () { render(true); }, 30000);
+
+  // ---------------------------------------------------------------- tabs
+  function frameSrc(tab) { return base() + FRAME_TABS[tab] + "?embed=1"; }
+  function resetFrames() {
+    Object.keys(frames).forEach(function (k) { frames[k].wrap.remove(); delete frames[k]; });
+    if (FRAME_TABS[S.tab]) ensureFrame(S.tab);
+  }
+  function ensureFrame(tab) {
+    var src = frameSrc(tab);
+    if (frames[tab] && frames[tab].src === src) return frames[tab];
+    if (frames[tab]) frames[tab].wrap.remove();
+    var wrap = document.createElement("div");
+    wrap.className = "frame-wrap";
+    wrap.innerHTML = '<div class="frame-load">Loading ' + h(FRAME_TITLES[tab]) + "…</div>" +
+      '<div class="frame-bar"><a class="btn sm" href="' + h(base() + FRAME_TABS[tab]) + '" target="_blank" rel="noopener" title="Open this view in a full tab">Open full ↗</a></div>';
+    var f = document.createElement("iframe");
+    f.className = "frame";
+    f.title = FRAME_TITLES[tab];
+    f.setAttribute("data-frame", tab);
+    f.setAttribute("allow", "clipboard-write");
+    f.addEventListener("load", function () {
+      var l = wrap.querySelector(".frame-load"); if (l) l.remove();
+      if (frames[tab] && frames[tab].el === f) postVis(frames[tab], S.tab === tab);
+    });
+    f.src = src;
+    wrap.insertBefore(f, wrap.firstChild);
+    $("frames").appendChild(wrap);
+    frames[tab] = { wrap: wrap, src: src, el: f };
+    return frames[tab];
+  }
+  function postVis(fr, visible) {
+    try { fr.el.contentWindow.postMessage({ type: "gitcrm:visible", visible: visible }, new URL(fr.src).origin); } catch (e) { /* not loaded yet */ }
+  }
+  function setTab(tab, opts) {
+    opts = opts || {};
+    if (tab !== "record" && tab !== "prs" && !FRAME_TABS[tab]) tab = "record";
+    var prev = S.tab;
+    S.tab = tab;
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs .tab"), function (b) {
+      var on = b.dataset.tab === tab;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      if (on && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    var framed = !!FRAME_TABS[tab];
+    document.body.classList.toggle("framed", framed);
+    $("frames").hidden = !framed || !$("settings").hidden;
+    if (framed) {
+      ensureFrame(tab); // lazy: created on first open, then kept
+    }
+    // hidden frames pause their live stream (see EMBED_BOOT in src/app/layout.tsx); state is kept
+    Object.keys(frames).forEach(function (k) {
+      var vis = k === tab;
+      frames[k].wrap.hidden = !vis;
+      postVis(frames[k], vis);
+    });
+    try { chrome.storage.local.set({ tab: tab }); } catch (e) { /* ignore */ }
+    if (opts.boot) return;
+    if (!framed) {
+      // record <-> prs show different data: drop the old view so it doesn't flash
+      var showsRecord = function (t) { return t === "record" && !!(S.ctx && S.ctx.record); };
+      if (S.view && showsRecord(tab) !== showsRecord(FRAME_TABS[prev] ? (S.view.mode === "queue" ? "prs" : "record") : prev)) {
+        S.view = null; S.sig = "";
+        $("app").innerHTML = '<div class="skel"></div><div class="skel"></div>';
+      }
+      if (prev !== tab) load({ spin: true });
+    }
+  }
+  $("tabs").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tab]");
+    if (b) setTab(b.dataset.tab);
+  });
+  function loadTab() {
+    return new Promise(function (resolve) {
+      try { chrome.storage.local.get({ tab: "record" }, function (r) { resolve((r && r.tab) || "record"); }); }
+      catch (e) { resolve("record"); }
+    });
+  }
 
   // ---------------------------------------------------------------- boot
   (async function boot() {
     await loadSettings();
+    setTab(await loadTab(), { boot: true });
     try {
       var w = await new Promise(function (resolve) {
         if (chrome.windows && chrome.windows.getCurrent) chrome.windows.getCurrent(function (win) { resolve(win); });

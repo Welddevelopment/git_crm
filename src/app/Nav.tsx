@@ -1,6 +1,7 @@
 "use client";
 /* Lead-owned app shell navigation (Calendly-B sidebar). */
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import type React from "react";
 
 const I = {
@@ -54,4 +55,40 @@ export function TopBar() {
       </span>
     </div>
   );
+}
+
+/* Embed mode (`?embed=1`): used by the Chrome extension side panel, which iframes these pages.
+   Hides the sidebar + top bar (CSS keyed on html[data-embed="1"]) and keeps embed=1 on
+   same-origin link clicks so navigation inside the iframe stays chrome-less. Sticky for the
+   iframe's session so client-side router.push() targets stay embedded too. */
+const EMBED_KEY = "gitcrm:embed";
+export function EmbedMode() {
+  const params = useSearchParams();
+  const q = params?.get("embed") ?? null;
+  useEffect(() => {
+    let on = q === "1";
+    try {
+      if (q === "1") sessionStorage.setItem(EMBED_KEY, "1");
+      else if (q === "0") sessionStorage.removeItem(EMBED_KEY);
+      else if (sessionStorage.getItem(EMBED_KEY) === "1") on = true;
+    } catch { /* storage blocked */ }
+    if (on) document.documentElement.dataset.embed = "1";
+    else delete document.documentElement.dataset.embed;
+  }, [q]);
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (document.documentElement.dataset.embed !== "1") return;
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || a.hasAttribute("download") || (a.target && a.target !== "_self")) return;
+      let u: URL;
+      try { u = new URL(a.href, location.href); } catch { return; }
+      if (u.origin !== location.origin || u.searchParams.get("embed") === "1") return;
+      u.searchParams.set("embed", "1");
+      a.href = u.pathname + u.search + u.hash; // rewrite before the browser follows it
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+  return null;
 }
