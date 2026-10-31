@@ -400,7 +400,11 @@ export function computeTrust(agent: AgentId, prs: PullRequest[]): AgentTrust {
   const closed = mine.filter((p) => p.status === "closed").length;
   const stale = mine.filter((p) => p.staleness?.status === "stale").length;
 
-  const raw = (merged + 1) / (opened + 2) - 0.25 * reverted - 0.1 * stale;
+  // Only decided PRs count: a PR still awaiting review isn't evidence against the agent,
+  // and going stale means the world changed, not that the agent was wrong.
+  const decided = merged + reverted + closed;
+  void stale;
+  const raw = (merged + 1) / (decided + 2) - 0.25 * reverted;
   const score = Math.min(1, Math.max(0, raw));
 
   let level: AgentTrust["level"] = "probation";

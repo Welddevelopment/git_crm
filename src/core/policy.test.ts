@@ -244,11 +244,11 @@ describe("computeTrust", () => {
     expect(t2.level).toBe("probation");
   });
 
-  it("stale PRs penalize; score clamped to [0,1]", () => {
+  it("open/stale PRs don't penalize (only decided PRs count); score clamped to [0,1]", () => {
     const prs = [pr(1, "open", "inbox", true), pr(2, "open", "inbox", true)];
     const t = computeTrust("inbox", prs);
     expect(t.staleCount).toBe(2);
-    expect(t.score).toBeCloseTo(0.25 - 0.2);
+    expect(t.score).toBeCloseTo(0.5);
     const bad = computeTrust("hygiene", [pr(1, "reverted"), pr(2, "reverted"), pr(3, "reverted")]);
     expect(bad.score).toBe(0);
   });
