@@ -142,19 +142,41 @@ export function naturalKeyFilter(object: AttioObject, key: string): unknown {
   return { name: key };
 }
 
-/** Attribute slugs whose values must match pre-defined options in the workspace (dropped on a 400 retry). */
-export const OPTION_SLUGS = ["categories", "employee_range", "stage"];
+/**
+ * Attribute slugs whose values must match pre-defined options in the workspace (select / multiselect / status);
+ * dropped on a 400 retry so an unknown title (e.g. category "Industrial Robotics") doesn't fail the whole write.
+ */
+export const OPTION_SLUGS = ["categories", "employee_range", "stage", "lead_source", "industry", "type", "status"];
+
+export interface OptionFallbackOptions {
+  /** slugs never stripped (attributes Attio requires on create, e.g. deal `stage`) */
+  protect?: readonly string[];
+  /** extra option-backed slugs for this object (from its live schema) */
+  optionSlugs?: readonly string[];
+  /** if stripping leaves nothing to write (a PATCH of only unknown options), resolve undefined instead of throwing */
+  skipIfEmpty?: boolean;
+}
 
 /** Write, retrying once without option-backed slugs if Attio rejects the values (e.g. unknown category title). */
-export async function writeWithOptionFallback<T>(values: Record<string, unknown>, write: (v: Record<string, unknown>) => Promise<T>): Promise<T> {
+export async function writeWithOptionFallback<T>(
+  values: Record<string, unknown>, write: (v: Record<string, unknown>) => Promise<T>, opts: OptionFallbackOptions = {},
+): Promise<T> {
   try {
     return await write(values);
   } catch (e) {
-    const risky = OPTION_SLUGS.filter((s) => s in values);
-    if (!(e instanceof AttioError) || e.status !== 400 || !risky.length) throw e;
+    if (!(e instanceof AttioError) || e.status !== 400) throw e;
+    // A missing required value can't be fixed by sending less.
+    if (/required value/i.test(e.message)) throw e;
+    const protect = new Set(opts.protect ?? []);
+    const slugs = new Set([...OPTION_SLUGS, ...(opts.optionSlugs ?? [])]);
+    const risky = Object.keys(values).filter((s) => slugs.has(s) && !protect.has(s));
+    if (!risky.length) throw e;
     const rest = { ...values };
     for (const s of risky) delete rest[s];
-    if (!Object.keys(rest).length) throw e;
+    if (!Object.keys(rest).length) {
+      if (opts.skipIfEmpty) return undefined as T;
+      throw e;
+    }
     return write(rest);
   }
 }

@@ -11,6 +11,7 @@ import {
   AttioClient, AttioError, SLUG_FIELD, TYPE_OBJECT, attioRuntime, markEcho, naturalKeyFilter, ownerResolver,
   resolveAlias, toAttioValues, writeWithOptionFallback, type AttioMember, type AttioObject,
 } from "../integrations/attio";
+import { completeDealCreate, loadDealSchema, mapDealStage } from "../integrations/attio/schema";
 
 export interface AttioAdapterOptions {
   token?: string;
@@ -67,7 +68,9 @@ export function createAttioAdapter(opts: AttioAdapterOptions = {}): TargetAdapte
         const object = TYPE_OBJECT[rec.type] as AttioObject;
         try {
           if (object === "deals" && attioRuntime().hasDeals === false) continue;
-          const values = toAttioValues(rec.type, rec.attrs, await ctx());
+          let values = toAttioValues(rec.type, rec.attrs, await ctx());
+          const dealSchema = object === "deals" ? await loadDealSchema(client, { members: (members ??= await client.members()) }) : undefined;
+          if (dealSchema) values = mapDealStage(values, dealSchema);
           const key = rec.type === "company" ? rec.attrs.domain : rec.type === "contact" ? rec.attrs.email : rec.attrs.name;
           let rid: string | undefined;
           if (typeof key === "string" && key) {
@@ -76,9 +79,16 @@ export function createAttioAdapter(opts: AttioAdapterOptions = {}): TargetAdapte
           }
           if (rid) {
             markEcho(rid, [...Object.keys(values).map((s) => SLUG_FIELD[s] ?? s), "__record"]);
-            await writeWithOptionFallback(values, (v) => client.update(object, rid!, v));
+            await writeWithOptionFallback(values, (v) => client.update(object, rid!, v), { skipIfEmpty: true });
           } else {
-            const r = await writeWithOptionFallback(values, (v) => client.create(object, v));
+            if (dealSchema) {
+              values = completeDealCreate(values, dealSchema, {
+                name: typeof rec.attrs.name === "string" ? rec.attrs.name : undefined,
+                amount: Number.isFinite(Number(rec.attrs.amount)) ? Number(rec.attrs.amount) : undefined,
+                companyRecordId: rec.attrs.company ? attioIdOf(String(rec.attrs.company)) : undefined,
+              });
+            }
+            const r = await writeWithOptionFallback(values, (v) => client.create(object, v), { protect: dealSchema?.required });
             rid = r.id.record_id;
             markEcho(rid, [...Object.keys(values).map((s) => SLUG_FIELD[s] ?? s), "__record"]);
           }
@@ -115,10 +125,11 @@ export function createAttioAdapter(opts: AttioAdapterOptions = {}): TargetAdapte
       }
       for (const b of batches.values()) {
         try {
-          const values = toAttioValues(b.type, b.attrs, await ctx());
+          let values = toAttioValues(b.type, b.attrs, await ctx());
+          if (b.object === "deals" && "stage" in values) values = mapDealStage(values, await loadDealSchema(client, { members: (members ??= await client.members()) }));
           if (!Object.keys(values).length) continue;
           markEcho(b.rid, Object.keys(values).map((s) => SLUG_FIELD[s] ?? s));
-          await writeWithOptionFallback(values, (v) => client.update(b.object, b.rid, v));
+          await writeWithOptionFallback(values, (v) => client.update(b.object, b.rid, v), { skipIfEmpty: true });
           pushed += 1;
         } catch (e) {
           errors.push(`${b.object}/${b.rid}: ${(e as Error).message}`);
