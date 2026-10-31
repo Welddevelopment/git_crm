@@ -41,9 +41,9 @@ export function EntityTable({ state, type, showHidden, newFields, filter, compar
     if (t === "ref" || (typeof v === "string" && /^(company|contact|deal):/.test(v))) {
       const id = String(v);
       const r = resolve(state, id);
-      return <span className={s.cellText}>{entityName(state, r)}{r !== id ? <span className={s.muted}> ↳</span> : null}</span>;
+      return <span className={s.cellText}>{entityName(state, r)}{r !== id ? <span className={s.faint}> ↳</span> : null}</span>;
     }
-    if (Array.isArray(v)) return <span className={s.row} style={{ gap: 4, flexWrap: "nowrap" }}>{v.map((x) => <span key={x} className={`${s.chip} ${s.chipAccent}`}>{x}</span>)}</span>;
+    if (Array.isArray(v)) return <span className={s.row} style={{ gap: 4, flexWrap: "nowrap" }}>{v.map((x) => <span key={x} className={s.chip}>{x}</span>)}</span>;
     if (field === "stage") {
       const st = String(v);
       const cls = st === "closed_won" || st === "customer" ? s.chipAdd : st === "closed_lost" || st === "churned" ? s.chipDel : st === "negotiation" ? s.chipWarn : s.chipSystem;
@@ -62,7 +62,7 @@ export function EntityTable({ state, type, showHidden, newFields, filter, compar
             <tr>
               {cols.map((c) => {
                 const isNew = newFields?.has(`${type}.${c}`);
-                return <th key={c} className={isNew ? s.newCol : undefined}>{c}{isNew ? <span className={s.newBadge}>NEW</span> : null}</th>;
+                return <th key={c} className={isNew ? s.newCol : undefined}>{c}{isNew ? <span className={s.newBadge}>New</span> : null}</th>;
               })}
               <th>id</th>
             </tr>
@@ -107,7 +107,7 @@ export function EntityTable({ state, type, showHidden, newFields, filter, compar
                 </tr>
               );
             })}
-            {!rows.length ? <tr><td colSpan={cols.length + 1}><div className={`${s.cell} ${s.muted}`}>No {type}s.</div></td></tr> : null}
+            {!rows.length ? <tr><td colSpan={cols.length + 1}><div className={`${s.cell} ${s.faint}`}>No {type}s.</div></td></tr> : null}
           </tbody>
         </table>
       </div>

@@ -35,9 +35,9 @@ export function actorLabel(a: Actor): string {
   return a.id === "seed" ? "seed" : a.id;
 }
 export function actorColor(a: Actor | undefined, isRevert = false): string {
-  if (isRevert) return "var(--del)";
-  if (!a) return "var(--muted)";
-  return a.kind === "agent" ? "var(--agent)" : a.kind === "human" ? "var(--human)" : "var(--muted)";
+  if (isRevert) return "var(--negative)";
+  if (!a) return "var(--series-3)";
+  return a.kind === "agent" ? "var(--blue)" : a.kind === "human" ? "var(--series-2)" : "var(--series-3)";
 }
 
 // ---------- state helpers ----------

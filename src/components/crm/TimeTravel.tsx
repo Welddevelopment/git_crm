@@ -5,9 +5,9 @@ import type { CRMState } from "@/core/types";
 import type { TimelineEntry } from "@/core/api-contract";
 import s from "./crm.module.css";
 import { src, useLive } from "./data";
-import { actorColor, describeTimeline, fmtDate, fmtDateLong, foldEvents, pipelineTotal, prNum, signedUsd, usd, type FeedLine } from "./lib";
+import { describeTimeline, fmtDate, fmtDateLong, foldEvents, pipelineTotal, prNum, signedUsd, usd, type FeedLine } from "./lib";
 import { EntityTable } from "./EntityTable";
-import { FeedLineView, LiveDot, MockNotice } from "./ui";
+import { FeedLineView, MockNotice } from "./ui";
 import { timelineMeta } from "./CrmView";
 
 interface Moment {
@@ -47,7 +47,7 @@ function toMoments(entries: TimelineEntry[]): Moment[] {
     const curKey = cur ? (cur.kind === "seed" ? "seed" : cur.pr ? `${cur.kind}:${cur.pr}` : `${cur.kind}:${cur.entries[0].event.id}`) : "";
     if (!cur || curKey !== groupKey) {
       flush();
-      cur = { at: ev.ts, from: ev.ts, entries: [], kind, pr, color: kind === "seed" ? "var(--border)" : actorColor(ev.actor, isRevert) };
+      cur = { at: ev.ts, from: ev.ts, entries: [], kind, pr, color: KIND_COLOR[kind] };
     }
     cur.entries.push(en);
     cur.at = Math.max(cur.at, ev.ts);
@@ -56,6 +56,9 @@ function toMoments(entries: TimelineEntry[]): Moment[] {
   flush();
   return out;
 }
+
+/** Ticks: agent merges in --blue, reverts --negative, everything else in blue-greys. */
+const KIND_COLOR: Record<Moment["kind"], string> = { seed: "var(--series-4)", merge: "var(--blue)", revert: "var(--negative)", direct: "var(--negative)", human: "var(--series-2)", system: "var(--series-3)" };
 
 const KIND_LABEL: Record<Moment["kind"], string> = { seed: "seed import", merge: "PR merged", revert: "revert", direct: "direct agent write", human: "human edit", system: "system" };
 
@@ -164,35 +167,39 @@ export default function TimeTravel() {
     <div className={s.page}>
       <div className={s.headerRow}>
         <div>
-          <div className={s.row}><span className={s.eyebrow}>Time travel · main</span><LiveDot /><MockNotice /></div>
-          <h1 className={s.h1}>Rewind main to any point in its history</h1>
-          <div className={s.sub}>Main is an append-only log, so any past state is one fold away. Drag the slider; deals and the forecast are recomputed as of that moment.</div>
+          <h1 className={s.title}>Time travel</h1>
+          <div className={s.sub}><span>Main is an append-only log, so any past state is one fold away. Drag the slider; deals and the forecast are recomputed as of that moment.</span></div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div className={s.statLabel}>Pipeline forecast {atNow ? "· now" : "· then"}</div>
-          <div className={s.bigTotal} style={{ color: atNow ? "var(--text)" : "var(--warn)" }}>{shown ? usd(shownTotal) : "—"}</div>
-          {!atNow ? <div className={`${s.delta} ${delta > 0 ? s.deltaUp : s.deltaDown}`}>{delta === 0 ? "same as now" : `${signedUsd(-delta)} since then`}</div> : <div className={`${s.small} ${s.muted}`}>head seq {live?.headSeq ?? "—"}</div>}
+        <div className={s.row} style={{ alignItems: "flex-end", gap: 12 }}>
+          <MockNotice />
+          <div className={s.stat}>
+            <div className={s.statLabel}>Pipeline forecast {atNow ? "· now" : "· then"}</div>
+            <div className={s.row} style={{ alignItems: "baseline", gap: 6, flexWrap: "nowrap" }}>
+              <span className={s.bigTotal}>{shown ? usd(shownTotal) : "—"}</span>
+              {!atNow && delta !== 0 ? <span className={`${s.delta} ${delta > 0 ? s.deltaUp : s.deltaDown}`}>{signedUsd(-delta)}</span> : null}
+            </div>
+            <div className={s.statHint}>{atNow ? `head seq ${live?.headSeq ?? "—"}` : delta === 0 ? "same as now" : "change since then"}</div>
+          </div>
         </div>
       </div>
 
-      <div className={`${s.banner} ${atNow ? s.bannerLive : ""}`}>
+      <div className={`${s.banner} ${atNow ? s.bannerLive : s.bannerPast}`}>
         {atNow ? (
-          <><span className={`${s.dot} ${s.pulse}`} style={{ background: "var(--add)" }} /><span>Viewing main <b>now</b> · following head</span></>
+          <><span className={s.dot} style={{ background: "var(--positive)" }} /><span>Viewing main <b>now</b> <span className={s.faint}>· following head</span></span></>
         ) : (
           <>
-            <span style={{ fontSize: 16 }}>⏪</span>
-            <span>Viewing main as of <b className={s.mono}>{m ? fmtDateLong(m.at) : ""}</b></span>
-            <span className={s.muted}>· stop {cur + 1}/{moments.length}</span>
+            <span>Viewing main as of <b>{m ? fmtDateLong(m.at) : ""}</b></span>
+            <span>· stop {cur + 1}/{moments.length}</span>
             {loading ? <span className={s.spinner} /> : null}
           </>
         )}
         <span className={s.grow} />
-        <button className={`${s.btn}`} onClick={() => jumpEvent(-1)} disabled={cur <= 0} title="Previous change (Shift+←)">◀ prev change</button>
-        <button className={`${s.btn}`} onClick={() => jumpEvent(1)} disabled={atNow} title="Next change (Shift+→)">next change ▶</button>
+        <button className={s.btn} onClick={() => jumpEvent(-1)} disabled={cur <= 0} title="Previous change (Shift+←)">← Prev change</button>
+        <button className={s.btn} onClick={() => jumpEvent(1)} disabled={atNow} title="Next change (Shift+→)">Next change →</button>
         <button className={`${s.btn} ${s.btnPrimary}`} onClick={() => setIdx(null)} disabled={atNow}>Back to now</button>
       </div>
 
-      <div className={s.panel} style={{ padding: "14px 6px 6px" }}>
+      <div className={s.panel} style={{ padding: "12px 0 4px" }}>
         <div
           className={`${s.slider} ${dragging ? s.sliderDragging : ""}`}
           tabIndex={0}
@@ -207,58 +214,58 @@ export default function TimeTravel() {
           onPointerUp={() => setDragging(false)}
           onPointerCancel={() => setDragging(false)}
         >
-          <div ref={trackRef} style={{ position: "absolute", left: 12, right: 12, top: 0, bottom: 0 }}>
+          <div ref={trackRef} style={{ position: "absolute", left: 16, right: 16, top: 0, bottom: 0 }}>
             {spark ? (
-              <svg viewBox="0 0 1000 28" preserveAspectRatio="none" style={{ position: "absolute", left: 0, right: 0, top: 2, width: "100%", height: 28, opacity: 0.5, pointerEvents: "none" }}>
-                <path d={spark} fill="none" stroke="var(--accent)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+              <svg viewBox="0 0 1000 28" preserveAspectRatio="none" style={{ position: "absolute", left: 0, right: 0, top: 2, width: "100%", height: 28, pointerEvents: "none" }}>
+                <path d={spark} fill="none" stroke="var(--series-3)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
               </svg>
             ) : null}
             {moments.map((mm) => mm.kind === "seed" ? null : (
               <span key={mm.idx} className={`${s.tick} ${s.tickUp}`} title={`${KIND_LABEL[mm.kind]}${mm.pr ? " " + prNum(mm.pr) : ""} · ${fmtDate(mm.at)}`}
-                style={{ left: `${pct(mm.idx)}%`, background: mm.color, opacity: mm.idx === cur ? 1 : 0.75, height: mm.kind === "revert" || mm.kind === "direct" ? 24 : 20, top: mm.kind === "revert" || mm.kind === "direct" ? 4 : 8 }} />
+                style={{ left: `${pct(mm.idx)}%`, background: mm.color, opacity: mm.idx === cur ? 1 : 0.8, height: mm.kind === "revert" || mm.kind === "direct" ? 20 : 16, top: mm.kind === "revert" || mm.kind === "direct" ? 10 : 14 }} />
             ))}
             <div className={s.sliderTrack} style={{ left: 0, right: 0 }}>
               <div className={s.sliderFill} style={{ width: `${pct(cur)}%`, transition: dragging ? "none" : "width 140ms ease" }} />
             </div>
             <div className={s.sliderThumb} style={{ left: `${pct(cur)}%`, transition: dragging ? "none" : "left 140ms ease" }} />
-            {labels.map((l) => <span key={l.i} className={s.tickLabel} style={{ left: `${pct(l.i)}%` }}>{l.t}</span>)}
+            {labels.map((l) => <span key={l.i} className={s.tickLabel} style={{ left: `${pct(l.i)}%`, transform: l.i === 0 ? "none" : l.i === last ? "translateX(-100%)" : undefined }}>{l.t}</span>)}
           </div>
         </div>
-        <div className={s.row} style={{ justifyContent: "space-between", padding: "8px 12px 4px" }}>
+        <div className={s.row} style={{ justifyContent: "space-between", padding: "10px 16px 8px", borderTop: "var(--hairline)" }}>
           <div className={s.legend}>
-            <span><i className={s.dot} style={{ background: "var(--agent)" }} />agent PR merged</span>
-            <span><i className={s.dot} style={{ background: "var(--human)" }} />human</span>
-            <span><i className={s.dot} style={{ background: "var(--muted)" }} />system / auto-merge</span>
-            <span><i className={s.dot} style={{ background: "var(--del)" }} />revert</span>
-            <span><svg width="16" height="6"><path d="M0,5 L5,2 L10,4 L16,1" stroke="var(--accent)" fill="none" /></svg>forecast</span>
+            <span><i className={s.swatch} style={{ background: "var(--blue)" }} />Agent PR merged</span>
+            <span><i className={s.swatch} style={{ background: "var(--series-2)" }} />Human</span>
+            <span><i className={s.swatch} style={{ background: "var(--series-3)" }} />System</span>
+            <span><i className={s.swatch} style={{ background: "var(--negative)" }} />Revert / direct write</span>
+            <span><svg width="16" height="6" aria-hidden><path d="M0,5 L5,2 L10,4 L16,1" stroke="var(--series-3)" strokeWidth="1.5" fill="none" /></svg>Forecast</span>
           </div>
-          <span className={`${s.tiny} ${s.muted} ${s.mono}`}>← → step · shift+← → jump to change · End = now</span>
+          <span className={`${s.tiny} ${s.faint}`}>← → step · Shift+← → jump to change · End = now</span>
         </div>
       </div>
 
-      <div className={s.two} style={{ gridTemplateColumns: "minmax(0, 2.2fr) minmax(0, 1fr)" }}>
+      <div className={s.two} style={{ gridTemplateColumns: "minmax(0, 2.6fr) minmax(0, 1fr)" }}>
         <div className={s.panel}>
           <div className={s.panelHead}>
             <span className={s.panelTitle}>Deals {atNow ? "· now" : "· as of " + (m ? fmtDate(m.at) : "")}</span>
-            {!atNow ? <span className={`${s.tiny} ${s.muted}`}><span className={s.dot} style={{ background: "var(--warn)", marginRight: 6 }} />differs from now (hover for current)</span> : null}
+            {!atNow ? <span className={s.panelMeta}><span className={s.swatch} style={{ background: "var(--notice-bg)", border: "1px solid var(--notice-ink)", height: 8, width: 12, marginRight: 6, verticalAlign: 0 }} />differs from now (hover for current)</span> : null}
           </div>
           {loading && !past ? <div className={s.loadingBar} /> : <div style={{ height: 2, opacity: loading ? 1 : 0 }} className={loading ? s.loadingBar : ""} />}
           {shown ? (
             <div style={{ opacity: loading ? 0.7 : 1, transition: "opacity 120ms" }}>
               <EntityTable state={shown} type="deal" compareTo={atNow ? null : live} newFields={meta.newFields} prByEvent={meta.prByEvent} blame={atNow} />
             </div>
-          ) : <div className={`${s.cell} ${s.muted}`}>Loading…</div>}
+          ) : <div className={`${s.cell} ${s.faint}`}>Loading…</div>}
         </div>
         <div className={s.panel}>
           <div className={s.panelHead}>
             <span className={s.panelTitle}>At this point</span>
-            {m ? <span className={`${s.chip}`} style={{ color: m.color, borderColor: m.color }}>{KIND_LABEL[m.kind]}{m.pr ? " " + prNum(m.pr) : ""}</span> : null}
+            {m ? <span className={s.chip} style={{ color: m.kind === "merge" || m.kind === "revert" || m.kind === "direct" ? m.color : undefined }}><i className={s.dot} style={{ background: m.color }} />{KIND_LABEL[m.kind]}{m.pr ? " " + prNum(m.pr) : ""}</span> : null}
           </div>
           <div style={{ maxHeight: 460, overflow: "auto" }}>
             {m?.kind === "seed" ? (
-              <div className={`${s.feedItem}`}><span className={s.feedTime}>{fmtDate(m.at)}</span><span>Initial import: <b>{m.entries.length}</b> events (schema + records).</span></div>
+              <div className={s.feedItem}><span className={s.tag}>seed</span><div><div className={s.feedTitle}>Initial import: <b>{m.entries.length}</b> events (schema + records)</div><div className={s.feedMeta}>{fmtDate(m.at)}</div></div><span /></div>
             ) : lines.map((l) => <FeedLineView key={l.key} line={l} />)}
-            {m?.pr ? <div style={{ padding: "8px 14px" }}><a href={`/prs/${m.pr}`} className={s.small}>Open PR {prNum(m.pr)} →</a></div> : null}
+            {m?.pr ? <div style={{ padding: "12px 16px" }}><a href={`/prs/${m.pr}`} className={s.btn}>Open PR {prNum(m.pr)}</a></div> : null}
           </div>
         </div>
       </div>

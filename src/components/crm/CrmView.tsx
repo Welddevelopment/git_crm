@@ -6,7 +6,7 @@ import s from "./crm.module.css";
 import { src, useLive } from "./data";
 import { isLive, pipelineTotal, usd } from "./lib";
 import { EntityTable } from "./EntityTable";
-import { LiveDot, MockNotice } from "./ui";
+import { MockNotice } from "./ui";
 import { WatchUrl } from "./WatchUrl";
 
 const TABS = [
@@ -58,45 +58,47 @@ export default function CrmView() {
     <div className={s.page}>
       <div className={s.headerRow}>
         <div>
-          <div className={s.row}><span className={s.eyebrow}>CRM · branch main</span><LiveDot /><MockNotice /></div>
-          <h1 className={s.h1}>The CRM, as main sees it</h1>
-          <div className={s.sub}>Every cell knows who wrote it. Click any value for its blame: actor, time, reason, evidence and the PR that landed it.</div>
+          <h1 className={s.title}>Records</h1>
+          <div className={s.sub}><span>The CRM as branch <b style={{ color: "var(--ink)", fontWeight: 600 }}>main</b> sees it. Click any value for its blame: actor, time, reason, evidence and the PR that landed it.</span></div>
         </div>
-        {data ? (
-          <div className={s.stat} style={{ minWidth: 220 }}>
-            <div className={s.statLabel}>Pipeline forecast</div>
-            <div className={s.statValue}>{usd(pipelineTotal(data.state))}</div>
-            <div className={s.statHint}>head seq <span className={s.mono}>{data.state.headSeq}</span></div>
-          </div>
-        ) : null}
+        <div className={s.row} style={{ alignItems: "flex-end", gap: 12 }}>
+          <MockNotice />
+          {data ? (
+            <div className={s.stat}>
+              <div className={s.statLabel}>Pipeline forecast</div>
+              <div className={s.statValue}>{usd(pipelineTotal(data.state))}</div>
+              <div className={s.statHint}>head seq {data.state.headSeq}</div>
+            </div>
+          ) : null}
+        </div>
       </div>
       {error ? <div className={s.err}>{error}</div> : null}
       <WatchUrl />
 
       <div className={s.panel}>
-        <div className={s.row} style={{ justifyContent: "space-between", padding: "0 12px", borderBottom: "1px solid var(--border)" }}>
-          <div className={s.tabs} style={{ borderBottom: 0 }}>
+        <div className={s.toolbar}>
+          <div className={s.tabs} role="tablist">
             {TABS.map((t) => {
               const nNew = [...meta.newFields].filter((f) => f.startsWith(t.type + ".")).length;
               return (
-                <button key={t.type} className={`${s.tab} ${tab === t.type ? s.tabActive : ""}`} onClick={() => pick(t.type)}>
+                <button key={t.type} role="tab" aria-selected={tab === t.type} className={`${s.tab} ${tab === t.type ? s.tabActive : ""}`} onClick={() => pick(t.type)}>
                   {t.label}<span className={s.count}>{counts[t.type]?.live ?? 0}</span>
-                  {nNew ? <span className={s.newBadge} style={{ marginLeft: 0 }}>+{nNew} FIELD</span> : null}
+                  {nNew ? <span className={s.newBadge} style={{ marginLeft: 0 }}>+{nNew} field</span> : null}
                 </button>
               );
             })}
           </div>
-          <div className={s.row} style={{ padding: "6px 0" }}>
+          <div className={s.row}>
             <input className={s.search} placeholder="Filter rows…" value={q} onChange={(e) => setQ(e.target.value)} />
             <label className={s.toggle}>
               <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
-              show merged / deleted{hiddenHere ? <span className={s.count}>{hiddenHere}</span> : null}
+              Show merged / deleted{hiddenHere ? <span className={s.count}>{hiddenHere}</span> : null}
             </label>
           </div>
         </div>
         {newHere ? (
-          <div className={s.small} style={{ padding: "8px 14px", borderBottom: "1px solid var(--border)", color: "var(--add)", background: "var(--add-bg)" }}>
-            Schema changed on main: {[...meta.newFields].filter((f) => f.startsWith(tab + ".")).map((f) => f.split(".")[1]).join(", ")} added by an agent PR. Existing records were backfilled.
+          <div className={s.schemaNote}>
+            Schema changed on main: <b>{[...meta.newFields].filter((f) => f.startsWith(tab + ".")).map((f) => f.split(".")[1]).join(", ")}</b> added by an agent PR. Existing records were backfilled.
           </div>
         ) : null}
         {!data ? <div className={s.loadingBar} /> : (

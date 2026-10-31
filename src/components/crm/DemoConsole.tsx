@@ -5,7 +5,7 @@ import type { CRMState, PullRequest } from "@/core/types";
 import s from "./crm.module.css";
 import { src, useLive } from "./data";
 import { overwriteStats, pipelineTotal, prNum, prStats, signedUsd, usd } from "./lib";
-import { FleetPanel, LiveDot, MockNotice, Stat } from "./ui";
+import { FleetPanel, Kpi, KpiStrip, MockNotice } from "./ui";
 
 type Status = "idle" | "running" | "done" | "error";
 interface StepState { status: Status; result?: ReactNode }
@@ -31,7 +31,7 @@ export default function DemoConsole() {
     await src.reset();
     const st = (await src.state()).state;
     const deals = Object.values(st.entities).filter((e) => e.type === "deal").length;
-    return <span>World reseeded: <b>{Object.keys(st.entities).length}</b> records, <b>{deals}</b> deals, forecast <b className={s.mono}>{usd(pipelineTotal(st))}</b>. No PRs.</span>;
+    return <span>World reseeded: <b>{Object.keys(st.entities).length}</b> records, <b>{deals}</b> deals, forecast <b className={s.num}>{usd(pipelineTotal(st))}</b>. No PRs.</span>;
   });
 
   const chaos = (n: number) => exec(n, async () => {
@@ -42,12 +42,12 @@ export default function DemoConsole() {
     const o = overwriteStats(before, after);
     return (
       <div>
-        <div className={s.resultBig} style={{ color: d === 0 ? "var(--warn)" : "var(--del)" }}>Forecast silently changed by {signedUsd(d)}</div>
+        <div className={s.resultBig} style={{ color: d === 0 ? "var(--notice-ink)" : "var(--negative)" }}>Forecast silently changed by {signedUsd(d)}</div>
         <div className={s.small} style={{ marginTop: 4 }}>
-          <span className={s.mono}>{usd(pipelineTotal(before))}</span> → <span className={s.mono} style={{ color: "var(--del)" }}>{usd(pipelineTotal(after))}</span>
-          <span className={s.muted}> · </span><b style={{ color: "var(--del)" }}>{o.overwritten}</b> fields overwritten
-          <span className={s.muted}> · </span><b style={{ color: "var(--del)" }}>{o.mergedAway}</b> contacts merged away
-          <span className={s.muted}> · </span><b>{r.directEvents}</b> direct writes, <b>0</b> reviews
+          <span className={s.num}>{usd(pipelineTotal(before))}</span> → <span className={s.num} style={{ color: "var(--negative)" }}>{usd(pipelineTotal(after))}</span>
+          <span className={s.faint}> · </span><b style={{ color: "var(--negative)" }}>{o.overwritten}</b> fields overwritten
+          <span className={s.faint}> · </span><b style={{ color: "var(--negative)" }}>{o.mergedAway}</b> contacts merged away
+          <span className={s.faint}> · </span><b>{r.directEvents}</b> direct writes, <b>0</b> reviews
         </div>
       </div>
     );
@@ -65,11 +65,11 @@ export default function DemoConsole() {
       <div>
         <div className={`${s.resultBig} ${s.resultGood}`}>{r.prs.length} PRs opened · forecast {d === 0 ? "unchanged" : signedUsd(d)}</div>
         <div className={s.small} style={{ marginTop: 4 }}>
-          <b style={{ color: "var(--add)" }}>{st.autoMerged}</b> auto-merged by policy
-          <span className={s.muted}> · </span><b style={{ color: "var(--warn)" }}>{st.awaiting}</b> awaiting review
-          <span className={s.muted}> · </span><b>{conflicts}</b> with conflicts
-          <span className={s.muted}> · </span><b>{rebased}</b> auto-rebased
-          <span className={s.muted}> · </span><a href="/prs">open PR inbox →</a>
+          <b style={{ color: "var(--positive)" }}>{st.autoMerged}</b> auto-merged by policy
+          <span className={s.faint}> · </span><b style={{ color: "var(--notice-ink)" }}>{st.awaiting}</b> awaiting review
+          <span className={s.faint}> · </span><b>{conflicts}</b> with conflicts
+          <span className={s.faint}> · </span><b>{rebased}</b> auto-rebased
+          <span className={s.faint}> · </span><a href="/prs">open PR inbox →</a>
         </div>
       </div>
     );
@@ -82,13 +82,13 @@ export default function DemoConsole() {
     if (!stale.length) return <span className={s.muted}>Email injected. No open PRs depended on it (did you run governed first?).</span>;
     return (
       <div>
-        <div className={s.resultBig} style={{ color: "var(--warn)" }}>{stale.length} PR{stale.length > 1 ? "s" : ""} went stale on their own</div>
+        <div className={s.resultBig} style={{ color: "var(--notice-ink)" }}>{stale.length} PR{stale.length > 1 ? "s" : ""} went stale on their own</div>
         {stale.map((p) => (
           <div key={p.id} className={s.prLine}>
             <span className={`${s.chip} ${s.chipWarn}`}>stale</span>
-            <a href={`/prs/${p.id}`} className={s.mono}>{prNum(p.id)}</a>
+            <a href={`/prs/${p.id}`} className={s.num}>{prNum(p.id)}</a>
             <span>{p.title}</span>
-            {p.staleness?.contradictions?.[0] ? <span className={`${s.muted} ${s.small}`}>— {p.staleness.contradictions[0].explanation}</span> : null}
+            {p.staleness?.contradictions?.[0] ? <span className={`${s.faint} ${s.small}`}>— {p.staleness.contradictions[0].explanation}</span> : null}
           </div>
         ))}
       </div>
@@ -110,28 +110,30 @@ export default function DemoConsole() {
     <div className={s.page}>
       <div className={s.headerRow}>
         <div>
-          <div className={s.row}><span className={s.eyebrow}>Presenter console</span><LiveDot /><MockNotice /></div>
-          <h1 className={s.h1}>Demo run-of-show</h1>
-          <div className={s.sub}>Click top to bottom. Each step reports what actually happened on main.</div>
+          <h1 className={s.title}>Demo console</h1>
+          <div className={s.sub}><span>Run-of-show. Click top to bottom; each step reports what actually happened on main.</span></div>
         </div>
-        <button className={`${s.btn} ${s.btnGhost}`} onClick={() => setSteps({})} disabled={busy}>Clear results</button>
+        <div className={s.row}>
+          <MockNotice />
+          <button className={s.btn} onClick={() => setSteps({})} disabled={busy}>Clear results</button>
+        </div>
       </div>
 
-      <div className={s.stats}>
-        <Stat big tone="accent" label="Forecast (main)" value={data ? usd(pipelineTotal(data.state)) : "—"} />
-        <Stat label="Open PRs" value={st ? st.open : "—"} />
-        <Stat label="Awaiting review" tone={st?.awaiting ? "warn" : undefined} value={st ? st.awaiting : "—"} />
-        <Stat label="Auto-merged" tone="add" value={st ? st.autoMerged : "—"} />
-        <Stat label="Stale" tone={st?.stale ? "del" : undefined} value={st ? st.stale : "—"} />
-      </div>
+      <KpiStrip>
+        <Kpi label="Forecast (main)" info="Sum of open deal amounts on main" value={data ? usd(pipelineTotal(data.state)) : "—"} n={data ? pipelineTotal(data.state) : undefined} fmtDelta={(d) => signedUsd(d)} meta={["open deals on main", data ? `head @${data.state.headSeq}` : " "]} />
+        <Kpi label="Open PRs" value={st ? st.open : "—"} n={st ? st.open : undefined} meta={[st ? `${st.merged} merged` : "—", " "]} />
+        <Kpi label="Awaiting review" value={st ? st.awaiting : "—"} n={st ? st.awaiting : undefined} upIs="bad" meta={["held by policy or conflict", " "]} />
+        <Kpi label="Auto-merged" value={st ? st.autoMerged : "—"} n={st ? st.autoMerged : undefined} meta={["by trust policy", " "]} />
+        <Kpi label="Stale" value={st ? st.stale : "—"} n={st ? st.stale : undefined} upIs="bad" meta={["evidence contradicted", " "]} />
+      </KpiStrip>
 
-      <div className={s.two} style={{ gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)" }}>
+      <div className={s.two} style={{ gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)" }}>
         <div className={s.steps}>
           {STEPS.map((x) => {
             const state = steps[x.n] || { status: "idle" };
             const cls = state.status === "done" ? s.stepDone : state.status === "running" ? s.stepRunning : "";
             return (
-              <div key={x.n} className={`${s.panel} ${s.step} ${cls}`}>
+              <div key={x.n} className={`${s.step} ${cls}`}>
                 <div className={s.stepNum}>{state.status === "done" ? "✓" : state.status === "running" ? <span className={s.spinner} /> : x.n}</div>
                 <div>
                   {x.run ? (
@@ -142,15 +144,15 @@ export default function DemoConsole() {
                     >{state.status === "running" ? <span className={s.spinner} /> : null}{x.btn}</button>
                   ) : (
                     <div className={s.row} style={{ flexDirection: "column", alignItems: "stretch", gap: 6 }}>
-                      {x.links?.map((l) => <a key={l.href} href={l.href} className={`${s.btn} ${s.bigBtn}`} style={{ padding: "9px 14px" }}>{l.label}</a>)}
+                      {x.links?.map((l) => <a key={l.href} href={l.href} className={`${s.btn} ${s.bigBtn}`}>{l.label}</a>)}
                     </div>
                   )}
                 </div>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{x.title}</div>
-                  <div className={`${s.small} ${s.muted}`}>{x.hint}</div>
-                  <div className={s.result} style={{ marginTop: state.result ? 8 : 0 }}>
-                    {state.status === "running" ? <span className={`${s.muted} ${s.pulse}`}>working…</span> : state.result}
+                  <div className={s.stepTitle}>{x.title}</div>
+                  <div className={s.stepHint}>{x.hint}</div>
+                  <div className={s.result} style={{ marginTop: state.result || state.status === "running" ? 8 : 0 }}>
+                    {state.status === "running" ? <span className={`${s.faint} ${s.pulse}`}>working…</span> : state.result}
                   </div>
                 </div>
               </div>

@@ -30,19 +30,19 @@ const IconPlug = () => (
   </svg>
 );
 
-export function Hero({ badges }: { badges?: ReactNode }) {
+export function Hero({ badges, headline = true }: { badges?: ReactNode; headline?: boolean }) {
   return (
     <section className={h.hero}>
       <div>
-        <div className={h.eyebrowRow}><span className={h.eyebrow}>⎇ Mainline · version control for CRM agents</span>{badges}</div>
-        <h1 className={h.headline}>Agents never write to your CRM. <em>They open PRs against it.</em></h1>
-        <p className={h.subhead}>
+        {badges ? <div className={h.eyebrowRow}>{badges}</div> : null}
+        {headline ? <h1 className={h.headline}>Agents never write to your CRM. <em>They open PRs against it.</em></h1> : null}
+        <p className={h.subhead} style={headline ? undefined : { marginTop: 0 }}>
           A git layer in front of your CRM. Every AI agent works on its own <b>branch</b> and opens a <b>pull request with evidence</b>;
-          Mainline merges them, catches conflicts, holds risky changes for you, and can revert anything.
+          Git CRM merges them, catches conflicts, holds risky changes for you, and can revert anything.
         </p>
         <div className={h.ctas}>
-          <a className={`${h.cta} ${h.ctaPrimary}`} href="/demo"><IconPlay /> Run the demo</a>
-          <a className={`${h.cta} ${h.ctaAgent}`} href="/extension"><IconPuzzle /> Install the Chrome extension</a>
+          <a className={h.cta} href="/demo"><IconPlay /> Run the demo</a>
+          <a className={h.cta} href="/extension"><IconPuzzle /> Install the Chrome extension</a>
           <a className={h.cta} href="/settings"><IconPlug /> Connect your CRM</a>
         </div>
       </div>
@@ -61,10 +61,10 @@ export function Hero({ badges }: { badges?: ReactNode }) {
 }
 
 const STEPS: { title: string; body: string; color: string; icon: ReactNode }[] = [
-  { title: "Agents propose", body: "Each agent writes to its own branch and opens a PR, every field backed by evidence.", color: "var(--agent)", icon: <IconBranch /> },
-  { title: "Mainline checks", body: "Three-way merge, conflicts between agents, branch-protection policy, stale evidence.", color: "var(--accent)", icon: <IconCheck /> },
-  { title: "You review", body: "Approve in the web app, in the Chrome side panel on the CRM record, or by text.", color: "var(--human)", icon: <IconReview /> },
-  { title: "Your CRM updates", body: "Write-back to HubSpot or Attio with full history. Revert any change, any time.", color: "var(--add)", icon: <IconDb /> },
+  { title: "Agents propose", body: "Each agent writes to its own branch and opens a PR, every field backed by evidence.", color: "var(--blue)", icon: <IconBranch /> },
+  { title: "Git CRM checks", body: "Three-way merge, conflicts between agents, branch-protection policy, stale evidence.", color: "var(--ink-2)", icon: <IconCheck /> },
+  { title: "You review", body: "Approve in the web app, in the Chrome side panel on the CRM record, or by text.", color: "var(--ink-2)", icon: <IconReview /> },
+  { title: "Your CRM updates", body: "Write-back to HubSpot or Attio with full history. Revert any change, any time.", color: "var(--positive)", icon: <IconDb /> },
 ];
 
 export function HowItWorks() {
@@ -82,15 +82,15 @@ export function HowItWorks() {
 }
 
 const WHY: { title: string; body: ReactNode; color: string }[] = [
-  { title: "Concurrency", color: "var(--agent)", body: <>Many agents at once, not one diff at a time. Branches get <b>real three-way merges</b>, and agent-vs-agent <b>conflicts</b> surface like git conflicts.</> },
-  { title: "Stale-decision detection", color: "var(--warn)", body: <>A PR that was right at 9am re-checks itself when new evidence lands, and flips to <b>stale</b> before anyone merges it at 4pm.</> },
-  { title: "Semantic rebase", color: "var(--accent)", body: <>An edit to a contact that another agent merged away as a duplicate <b>follows the survivor</b> instead of failing or resurrecting it.</> },
+  { title: "Concurrency", color: "var(--blue)", body: <>Many agents at once, not one diff at a time. Branches get <b>real three-way merges</b>, and agent-vs-agent <b>conflicts</b> surface like git conflicts.</> },
+  { title: "Stale-decision detection", color: "var(--ink-2)", body: <>A PR that was right at 9am re-checks itself when new evidence lands, and flips to <b>stale</b> before anyone merges it at 4pm.</> },
+  { title: "Semantic rebase", color: "var(--ink-2)", body: <>An edit to a contact that another agent merged away as a duplicate <b>follows the survivor</b> instead of failing or resurrecting it.</> },
 ];
 
 export function WhyNotQueue() {
   return (
-    <section>
-      <div className={h.whyHead}>Why not just an approval queue?</div>
+    <section className={h.whyPanel}>
+      <div className={h.whyHead}><span>Why not just an approval queue?</span><span className={h.whyMeta}>three things a queue can’t do</span></div>
       <div className={h.why}>
         {WHY.map((w) => (
           <div key={w.title} className={h.whyCard} style={{ "--c": w.color } as CSSProperties}>

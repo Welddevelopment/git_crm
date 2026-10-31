@@ -50,20 +50,20 @@ export function WatchUrl() {
           aria-label="Company website URL"
         />
         <button className={`${s.btn} ${s.btnPrimary}`} type="submit" disabled={busy || !url.trim()}>
-          {busy ? <span className={s.spinner} /> : <span aria-hidden>🔥</span>} {busy ? "Scraping…" : "Scrape with Firecrawl"}
+          {busy ? <span className={s.spinner} /> : null}{busy ? "Scraping…" : "Scrape with Firecrawl"}
         </button>
       </form>
       {st.kind === "busy" ? (
-        <span className={`${s.watchStatus} ${s.muted}`}>Crawling {st.url} (homepage, careers, pricing, about) — this can take 10–20s…</span>
+        <span className={`${s.watchStatus} ${s.faint}`}>Crawling {st.url} (homepage, careers, pricing, about) — this can take 10–20s…</span>
       ) : st.kind === "ok" ? (
         <span className={`${s.watchStatus} ${s.watchOk}`}>
           <Link href={`/prs/${st.prId}`}>PR opened — review it</Link>
-          <span className={s.muted}>{st.title}</span>
+          <span className={s.faint}>{st.title}</span>
         </span>
       ) : st.kind === "err" ? (
         <span className={`${s.watchStatus} ${s.err}`}>{st.msg}</span>
       ) : (
-        <span className={`${s.watchStatus} ${s.muted}`}>The agent proposes the account as a PR — nothing lands on main until you merge.</span>
+        <span className={`${s.watchStatus} ${s.faint}`}>The agent proposes the account as a PR — nothing lands on main until you merge.</span>
       )}
     </div>
   );

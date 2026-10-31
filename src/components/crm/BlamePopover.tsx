@@ -57,21 +57,21 @@ export function BlamePopover({ target, state, onClose, prByEvent }: { target: Bl
     <div ref={ref} className={s.popover} style={{ left: pos.left, top: pos.top }} role="dialog" aria-label="Field history">
       <div className={s.popHead}>
         <div className={s.row} style={{ justifyContent: "space-between" }}>
-          <span className={s.eyebrow}>blame</span>
-          <button className={`${s.btn} ${s.btnGhost}`} style={{ padding: "0 6px", border: 0 }} onClick={onClose} aria-label="Close">✕</button>
+          <span className={s.eyebrow}>Blame</span>
+          <button className={`${s.btn} ${s.iconBtn}`} onClick={onClose} aria-label="Close">✕</button>
         </div>
-        <div style={{ marginTop: 2 }}>
-          <b>{entityName(state, target.entity)}</b><span className={s.muted}> · </span><span className={s.mono}>{target.field}</span>
+        <div className={s.popTitle}>
+          {entityName(state, target.entity)}<span className={s.faint}> · </span><span style={{ fontWeight: 500, color: "var(--ink-2)" }}>{target.field}</span>
         </div>
         <div className={s.row} style={{ marginTop: 6 }}>
-          <span className={s.muted + " " + s.small}>current</span>
+          <span className={`${s.faint} ${s.small}`}>Current</span>
           <span className={s.val}>{fmtValue(target.value, target.field)}</span>
-          <span className={`${s.tiny} ${s.muted} ${s.mono}`} style={{ marginLeft: "auto" }}>{target.entity}</span>
+          <span className={`${s.tiny} ${s.faint}`} style={{ marginLeft: "auto" }}>{target.entity}</span>
         </div>
       </div>
       {err ? <div className={s.hist}><span className={s.err}>{err}</span></div> : null}
-      {!hist && !err ? <div className={s.hist}><span className={`${s.muted} ${s.pulse}`}>Loading history…</span></div> : null}
-      {hist && !hist.length ? <div className={s.hist}><span className={s.muted}>No recorded writes for this field.</span></div> : null}
+      {!hist && !err ? <div className={s.hist}><span className={`${s.faint} ${s.pulse}`}>Loading history…</span></div> : null}
+      {hist && !hist.length ? <div className={s.hist}><span className={s.faint}>No recorded writes for this field.</span></div> : null}
       {hist?.map((h, i) => {
         const pr = prOf(h);
         const isRevert = h.actor.kind === "system" && h.actor.id === "revert";
@@ -80,21 +80,21 @@ export function BlamePopover({ target, state, onClose, prByEvent }: { target: Bl
             <span className={s.histDot} style={{ background: actorColor(h.actor, isRevert) }} />
             <div className={s.row} style={{ gap: 8 }}>
               <ActorChip actor={h.actor} small />
-              {i === 0 ? <span className={`${s.chip} ${s.chipAccent}`}>current</span> : null}
-              <span className={`${s.tiny} ${s.muted}`} title={new Date(h.ts).toISOString()}>{fmtDate(h.ts)} · {timeAgo(h.ts)} ago</span>
-              <span className={`${s.tiny} ${s.muted} ${s.mono}`} style={{ marginLeft: "auto" }}>seq {h.seq}</span>
+              {i === 0 ? <span className={s.youLabel}>Current</span> : null}
+              <span className={`${s.tiny} ${s.faint}`} title={new Date(h.ts).toISOString()}>{fmtDate(h.ts)} · {timeAgo(h.ts)} ago</span>
+              <span className={`${s.tiny} ${s.faint}`} style={{ marginLeft: "auto" }}>seq {h.seq}</span>
             </div>
             {h.reason ? <div style={{ marginTop: 5 }}>{h.reason}</div> : null}
             {(h.evidence || []).map((ev, j) => (
               <div key={j} className={s.claim}>
                 <div>{ev.claim}</div>
                 {ev.quote ? <div className={s.quote}>“{ev.quote}”</div> : null}
-                <div className={`${s.tiny} ${s.muted} ${s.mono}`} style={{ marginTop: 3 }}>{ev.docId}</div>
+                <div className={`${s.tiny} ${s.faint}`} style={{ marginTop: 3 }}>{ev.docId}</div>
               </div>
             ))}
             <div className={`${s.row} ${s.tiny}`} style={{ marginTop: 6, gap: 10 }}>
-              <span className={`${s.muted} ${s.mono}`}>{h.branch}</span>
-              {pr ? <a href={`/prs/${pr}`} className={s.mono}>PR {prNum(pr)} →</a> : null}
+              <span className={s.faint}>{h.branch}</span>
+              {pr ? <a href={`/prs/${pr}`}>PR {prNum(pr)} →</a> : null}
             </div>
           </div>
         );
