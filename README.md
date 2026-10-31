@@ -4,7 +4,7 @@
 
 Mainline is a version-control layer that sits in front of a CRM. Every AI agent that wants to change customer data (an inbox agent, a dedup agent, an enrichment agent, a schema agent) works on its own **branch** and opens a **pull request**. Mainline three-way-merges those PRs into `main`, detects conflicts between agents, holds risky changes for a human, lets you **revert** any change and **time-travel** the whole CRM, and flags PRs whose evidence has gone **stale** before anyone merges them.
 
-> 🔗 **Live demo:** _URL added at deploy time_ · Built in one evening at **Night Hack by Founders, Inc.** (Oct 30, 2026)
+> 🔗 **Live demo:** https://gitcrm-production.up.railway.app · Built in one evening at **Night Hack by Founders, Inc.** (Oct 30, 2026)
 
 ---
 
