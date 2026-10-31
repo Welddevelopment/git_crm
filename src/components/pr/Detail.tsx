@@ -5,6 +5,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type React
 import type { PRDetail } from "@/core/api-contract";
 import type { CRMState, EntityId, Event, EvidenceDoc } from "@/core/types";
 import { api } from "@/client/api";
+import BranchGraph from "@/components/graph/BranchGraph";
 import { ActorChip, IconAlert, IconArrowRight, IconClock, IconDiff, IconList, StatusPill } from "./atoms";
 import { ConflictsPanel, type Resolution } from "./Conflicts";
 import { deriveChanges, Diff } from "./Diff";
@@ -178,6 +179,7 @@ export function Detail({ id }: { id: string }) {
         </span>
         <span title={fmtDateTime(pr.createdAt)}>· opened {fmtAge(pr.createdAt)}</span>
       </div>
+      {source === "api" && <div style={{ margin: "12px 0 4px" }}><BranchGraph compact focusPr={pr.id} height={110} /></div>}
       {pr.description && <p className="pr-desc">{richText(pr.description)}</p>}
 
       <div className="pr-dtabs" role="tablist">
