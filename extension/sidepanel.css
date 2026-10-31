@@ -40,6 +40,9 @@ code,.mono{font-family:var(--mono);font-size:11.5px}
 .conn.demo{background:var(--notice-bg);color:var(--notice-ink);border-color:var(--line-notice)}.conn.demo i{background:var(--notice-ink)}
 .icon-btn{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:var(--radius-control);background:#fff;border:var(--hairline);color:var(--ink-2)}
 .icon-btn:hover{color:var(--ink);background:var(--blue-soft)}
+.pill-btn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:var(--radius-control);background:#fff;border:var(--hairline);color:var(--ink);font-size:12.5px;font-weight:500}
+.pill-btn:hover{background:var(--blue-soft)}
+.pill-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
 .icon-btn.spin svg{animation:spin .7s linear}
 @keyframes spin{to{transform:rotate(360deg)}}
 

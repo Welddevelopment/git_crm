@@ -33,8 +33,8 @@
   };
 
   // Tabs: "record"/"prs" are rendered natively; the rest iframe the web app in embed mode.
-  var FRAME_TABS = { graph: "/", timeline: "/timeline", crm: "/crm", settings: "/settings", demo: "/demo" };
-  var FRAME_TITLES = { graph: "Branch graph", timeline: "Time travel", crm: "Records", settings: "Agents & rules", demo: "Demo console" };
+  var FRAME_TABS = { graph: "/", timeline: "/timeline", crm: "/crm", settings: "/settings", demo: "/demo", emails: "/emails" };
+  var FRAME_TITLES = { graph: "Branch graph", timeline: "Time travel", crm: "Records", settings: "Agents & rules", demo: "Demo console", emails: "Emails" };
   var frames = {}; // tab -> { el, src } (created on first open, hidden — not destroyed — when switching)
 
   var $ = function (id) { return document.getElementById(id); };
@@ -699,6 +699,10 @@
   function doAct(id, kind) { act(id, kind); }
 
   $("refresh").addEventListener("click", function () { S.lookupMissing = false; load({ spin: true }); });
+  if ($("emails")) $("emails").addEventListener("click", function () {
+    if (!$("settings").hidden) closeSettings();
+    setTab(S.tab === "emails" ? "record" : "emails");
+  });
   $("gear").addEventListener("click", function () { $("settings").hidden ? openSettings() : closeSettings(); });
 
   function openSettings() {
@@ -821,6 +825,7 @@
       b.setAttribute("aria-selected", on ? "true" : "false");
       if (on && b.scrollIntoView) b.scrollIntoView({ block: "nearest", inline: "nearest" });
     });
+    if ($("emails")) $("emails").classList.toggle("active", tab === "emails");
     var framed = !!FRAME_TABS[tab];
     document.body.classList.toggle("framed", framed);
     $("frames").hidden = !framed || !$("settings").hidden;

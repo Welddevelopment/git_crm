@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import type React from "react";
+import { EmailsMenu } from "@/components/email/EmailsMenu";
 
 const I = {
   overview: <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
@@ -22,7 +23,7 @@ const GROUPS: { label: string; items: { href: string; label: string; icon: React
   { label: "Connect", items: [{ href: "/extension", label: "Chrome extension", icon: I.ext }, { href: "/settings", label: "Settings", icon: I.settings }] },
 ];
 
-const TITLES: [string, string][] = [["/prs", "Pull requests"], ["/crm", "Records"], ["/timeline", "Time travel"], ["/demo", "Demo console"], ["/extension", "Chrome extension"], ["/settings", "Settings"]];
+const TITLES: [string, string][] = [["/prs", "Pull requests"], ["/crm", "Records"], ["/timeline", "Time travel"], ["/demo", "Demo console"], ["/extension", "Chrome extension"], ["/settings", "Settings"], ["/emails", "Emails"]];
 
 export function Sidebar() {
   const path = usePathname() || "/";
@@ -50,6 +51,7 @@ export function TopBar() {
       <span>Git CRM · <span style={{ color: "var(--ink)" }}>{title}</span></span>
       <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span className="live"><i />Live</span>
+        <EmailsMenu />
         <a className="btn" href="/extension">Get the extension</a>
         <a className="btn primary" href="/demo">Run demo</a>
       </span>
