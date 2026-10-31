@@ -195,6 +195,67 @@ footer{padding-top:28px;padding-bottom:28px;display:flex;justify-content:space-b
 footer nav{display:flex;gap:20px;flex-wrap:wrap}
 footer a:hover{color:var(--ink)}
 
+/* triage mock */
+.tri{font-size:13.5px}
+.tri .chips{display:flex;gap:6px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line)}
+.tri .c{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;font-weight:500;color:var(--ink-2);background:#fff}
+.tri .c.on{background:var(--blue-soft);border-color:#cfe0ff;color:var(--ink)}
+.tri .c i{width:7px;height:7px;border-radius:2px;background:var(--sw,var(--faint))}
+.tri .c em{font-style:normal;color:var(--faint)}
+.tri .c.need em{color:var(--notice-ink);font-weight:700}
+.tri .gh{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#f7faff;border-bottom:1px solid var(--line);font-weight:600;font-size:13px}
+.tri .gh small{font-weight:400;color:var(--faint);font-size:12px}
+.tri .gh .ap{margin-left:auto;height:28px;padding:0 12px;border-radius:999px;border:1px solid #bfe7d6;color:var(--positive);background:#fff;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center}
+.tri .gh .one{margin-left:auto;font-size:12px;font-weight:500;color:var(--faint)}
+.tri .pr{display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tri .pr:last-child{border-bottom:0}
+.tri .pr b{font-weight:500}
+.sw-money{--sw:#e5484d}.sw-id{--sw:#d97706}.sw-schema{--sw:#7c5cf5}.sw-deal{--sw:#2f6bf0}.sw-clean{--sw:#64748b}.sw-enrich{--sw:#0a8a5f}
+/* agents */
+.agents{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:12px;margin-top:48px;overflow:hidden}
+.agents>div{padding:24px;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.agents>div:last-child{border-right:0}
+.agents h3{font-size:16px;font-weight:600;margin:14px 0 6px}
+.agents p{font-size:14.5px;color:var(--ink-2);margin:0}
+.agents .ex{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink-2)}
+.agents .ex b{color:var(--ink);font-weight:600}
+.byo{margin-top:16px;border:1px solid #cfe0ff;background:#f7faff;border-radius:12px;padding:20px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}
+.byo p{margin:0;font-size:15px;color:var(--ink-2)}
+.byo p b{color:var(--ink)}
+.access{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.access a,.access div{border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:14px;color:var(--ink-2)}
+.access a:hover{border-color:#cfe0ff;background:#fafcff}
+.access b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px;font-size:14.5px}
+/* run it today */
+.tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.track{border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;background:#fff;min-width:0}
+.track .th{padding:22px 22px 18px;border-bottom:1px solid var(--line)}
+.track .th .time{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--blue);background:var(--blue-soft);border-radius:999px;padding:3px 10px}
+.track .th h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:12px 0 4px}
+.track .th p{margin:0;font-size:14.5px;color:var(--ink-2)}
+.track ol{margin:0;padding:18px 22px 6px 22px;list-style:none;counter-reset:r;display:grid;gap:14px;flex:1}
+.track li{counter-increment:r;position:relative;padding-left:34px;font-size:14.5px;color:var(--ink)}
+.track li:before{content:counter(r);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:700;display:grid;place-items:center;font-family:var(--mono)}
+.track li span{display:block;color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.track li code,.limits code{font-size:12px;background:var(--blue-soft);color:var(--blue);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.track .tf{padding:16px 22px 22px}
+.track pre.code{border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.65;margin-top:4px}
+.envt{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.envt .er{display:grid;grid-template-columns:260px 1fr;border-bottom:1px solid var(--line);font-size:14px}
+.envt .er:last-child{border-bottom:0}
+.envt .er>div{padding:11px 16px}
+.envt .er>div:first-child{font-family:var(--mono);font-size:12.5px;color:var(--ink);border-right:1px solid var(--line);overflow-wrap:anywhere}
+.envt .er>div:last-child{color:var(--ink-2)}
+.envt .eh>div{font-family:var(--font)!important;font-size:13px!important;font-weight:600;color:var(--ink-2)!important;background:#fafcff}
+.after{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.after .box{border:1px solid var(--line);border-radius:12px;padding:22px}
+.after h3{font-size:17px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em}
+.limits{list-style:none;padding:0;margin:0;display:grid;gap:10px;font-size:14.5px;color:var(--ink-2)}
+.limits li{padding-left:18px;position:relative}
+.limits li:before{content:"";position:absolute;left:2px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.limits li b{color:var(--ink);font-weight:600}
+.after .box.ok .limits li:before{background:var(--positive)}
+
 /* reveal */
 .js .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
 .js .rv.in{opacity:1;transform:none}
@@ -210,6 +271,10 @@ footer a:hover{color:var(--ink)}
   .feat,.feat.flip{grid-template-columns:minmax(0,1fr);gap:32px;padding-top:64px;padding-bottom:64px}
   .feat.flip .copy{order:0}
   .gal{grid-template-columns:1fr 1fr}
+  .agents,.access{grid-template-columns:1fr 1fr}
+  .agents>div:nth-child(2){border-right:0}
+  .agents>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .tracks{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:720px){
   .pad{padding-left:16px;padding-right:16px}
@@ -231,6 +296,13 @@ footer a:hover{color:var(--ink)}
   .ctas .btn{width:100%;justify-content:center}
   .shot{margin-top:40px}
   .chrome .url{display:none}
+  .agents,.access,.after{grid-template-columns:minmax(0,1fr)}
+  .agents>div{border-right:0!important;border-bottom:1px solid var(--line)}
+  .agents>div:last-child{border-bottom:0}
+  .byo{grid-template-columns:minmax(0,1fr)}
+  .envt .er{grid-template-columns:minmax(0,1fr)}
+  .envt .er>div:first-child{border-right:0;border-bottom:1px dashed var(--line)}
+  .envt .eh{display:none}
 }
 </style>
 </head>
@@ -251,7 +323,7 @@ footer a:hover{color:var(--ink)}
   <div class="frame pad nav">
     <a class="logo" href="/landing" aria-label="Git CRM home"><span class="mark">G</span>Git CRM</a>
     <nav class="navlinks" aria-label="Sections">
-      <a href="#problem">Problem</a><a href="#how">How it works</a><a href="#features">Features</a><a href="#why">Why not a queue?</a><a href="https://github.com/Welddevelopment/git_crm">GitHub</a>
+      <a href="#how">How it works</a><a href="#features">Features</a><a href="#agents">Agents</a><a href="#run">Run it today</a><a href="https://github.com/Welddevelopment/git_crm">GitHub</a>
     </nav>
     <div class="navcta">
       <a class="btn sm" href="/extension">Chrome extension</a>
@@ -269,7 +341,7 @@ footer a:hover{color:var(--ink)}
     <p class="sub">Git CRM is a git-style layer in front of Attio and HubSpot. Every AI agent works on its own branch and opens a pull request with evidence. Git CRM three-way-merges them, catches conflicts between agents, holds risky changes for a human, and lets you revert anything.</p>
     <div class="ctas">
       <a class="btn primary" href="/demo"><svg><use href="#i-play"/></svg>Try the live demo</a>
-      <a class="btn" href="/extension"><svg><use href="#i-puzzle"/></svg>Install the Chrome extension</a>
+      <a class="btn" href="#run"><svg><use href="#i-arrow"/></svg>Run it yourself</a>
       <a class="btn" href="https://github.com/Welddevelopment/git_crm"><svg><use href="#i-gh"/></svg>View on GitHub</a>
     </div>
     <div class="works" aria-label="Supported CRMs">
@@ -311,7 +383,7 @@ footer a:hover{color:var(--ink)}
       <div class="step rv"><span class="n">01</span><h3>Agents branch</h3><p>Each agent reads <code>main</code> and writes only to its own branch, e.g. <code>agent/inbox/2</code>. It can't touch the source of truth.</p></div>
       <div class="step rv"><span class="n">02</span><h3>They open a PR</h3><p>Every changed field cites the email, web page or call that justifies it, with a verbatim quote.</p></div>
       <div class="step rv"><span class="n">03</span><h3>Git CRM checks it</h3><p>Three-way merge against <code>main</code>, conflict detection, branch-protection policy, agent trust, and a staleness re-check when new evidence lands.</p></div>
-      <div class="step rv"><span class="n">04</span><h3>Merge, then sync</h3><p>Safe changes auto-merge; risky ones wait for a human. Merged changes are written back to your CRM. Anything can be reverted.</p></div>
+      <div class="step rv"><span class="n">04</span><h3>Merge, then sync</h3><p>Safe changes auto-merge; risky ones wait for a human. Merged changes are written back to your CRM. Every merge, including auto-merges, can be reverted.</p></div>
     </div>
     <div class="flow rv" aria-label="Data flow">
       <b>emails · web pages · calls</b> <span class="arr">→</span> <b>agents</b> <span class="arr">→</span> branch + PR <span class="arr">→</span> <b>merge engine</b> (conflicts · policy · trust · staleness) <span class="arr">→</span> human review <span class="arr">→</span> <b>main</b> (event log) <span class="arr">→</span> <b>Attio / HubSpot</b>
@@ -402,22 +474,51 @@ footer a:hover{color:var(--ink)}
 
     <div class="feat">
       <div class="copy rv">
-        <span class="eyebrow"><i></i>Revert · time travel · blame</span>
-        <h3>Nothing is ever overwritten.</h3>
-        <p>Every change is an immutable event with its actor, reason and evidence. The CRM is a fold of the log, so any past state is one replay away.</p>
+        <span class="eyebrow"><i></i>Triage at agent scale</span>
+        <h3>Fifty PRs a day? You only see the ones that need you.</h3>
+        <p>Most agent changes are low risk and merge themselves. The rest are sorted automatically by what they touch, so you review a category at a time instead of a wall of PRs.</p>
         <ul class="bul">
-          <li>Revert any PR, including a bad dedup, by writing inverse events</li>
+          <li>Every PR is categorized from its diff <span>(money &amp; stage, merges &amp; deletes, schema, deal updates, new records, data cleanup, enrichment)</span></li>
+          <li>A "Needs you" filter: only PRs held by policy, gone stale, or in conflict</li>
+          <li>Group by category or by agent, then approve a whole group in one click</li>
+          <li>Bulk approve skips anything stale, conflicting or blocked. Record merges and schema changes are always one at a time</li>
+        </ul>
+      </div>
+      <div class="panel tri rv" role="img" aria-label="Pull request inbox grouped by category with filter chips and per-group approve buttons">
+        <div class="chips">
+          <span class="c on">All <em>9</em></span><span class="c need">Needs you <em>8</em></span>
+          <span class="c sw-money"><i></i>Money &amp; stage <em>4</em></span><span class="c sw-id"><i></i>Merges &amp; deletes <em>2</em></span>
+          <span class="c sw-schema"><i></i>Schema <em>1</em></span><span class="c sw-clean"><i></i>Data cleanup <em>1</em></span>
+        </div>
+        <div class="gh">Money &amp; stage <small>4 · moves the forecast</small><span class="ap">Approve all 4</span></div>
+        <div class="pr"><b>Acme: Discovery → Negotiation, $20k → $45k</b><span class="tag warn">needs review</span></div>
+        <div class="pr"><b>Lumen: Demo → Proposal</b><span class="tag warn">needs review</span></div>
+        <div class="gh">Merges &amp; deletes <small>2 · hard to undo by hand</small><span class="one">one at a time</span></div>
+        <div class="pr"><b>Merge duplicate: Alex Chen (Lumen) → Alex Chen (Kestrel)</b><span class="tag warn">needs review</span></div>
+        <div class="gh">Deal updates <small>1</small><span class="one">conflict: resolve first</span></div>
+        <div class="pr"><b>Northwind: 250 employees</b><span class="tag bad">1 conflict</span></div>
+      </div>
+    </div>
+
+    <div class="feat flip">
+      <div class="copy rv">
+        <span class="eyebrow"><i></i>Revert · time travel · blame</span>
+        <h3>Nothing is ever overwritten. Anything can be undone.</h3>
+        <p>Every change is an immutable event with its actor, reason and evidence. The CRM is a fold of the log, so any past state is one replay away, and you can go back to it.</p>
+        <ul class="bul">
+          <li>Revert any merged PR, auto-merged ones included, by writing inverse events. A reverted agent drops back to probation</li>
+          <li><b>Restore the whole CRM to any moment:</b> drag the slider back, click "Restore to this point". Everything since is undone as one PR, and reverting that PR undoes the restore</li>
           <li>Drag a slider to see deals and the forecast as they were on any date</li>
           <li>Per-field blame: who changed it, when, why, and on what evidence</li>
         </ul>
       </div>
       <figure class="panel rv" style="margin:0">
         <img class="media" src="/landing/timeline.webp" alt="Time travel view: a slider over main's history with the deals table and pipeline forecast" loading="lazy" decoding="async" width="1440" height="900">
-        <figcaption>Time travel: rewind main and the pipeline forecast is recomputed for that moment.</figcaption>
+        <figcaption>Time travel: rewind main, see the forecast as it was, and restore to that point if you need to.</figcaption>
       </figure>
     </div>
 
-    <div class="feat flip">
+    <div class="feat">
       <div class="copy rv">
         <span class="eyebrow"><i></i>Chrome side panel</span>
         <h3>Review agent changes on the record itself.</h3>
@@ -443,7 +544,7 @@ footer a:hover{color:var(--ink)}
       </div>
     </div>
 
-    <div class="feat">
+    <div class="feat flip">
       <div class="copy rv">
         <span class="eyebrow"><i></i>Drop-in API proxy</span>
         <h3>Your existing agents don't change. Swap one base URL.</h3>
@@ -463,6 +564,117 @@ footer a:hover{color:var(--ink)}
       </div>
     </div>
 
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section id="agents">
+  <div class="frame pad sec">
+    <span class="eyebrow"><i></i>The agents</span>
+    <h2 class="h2 rv">Four reference agents. Or bring your own.</h2>
+    <p class="lead rv">Git CRM ships with four agents so you can see the whole loop. Each works with no API key using deterministic rules; with an Anthropic key, Claude fills in what the rules miss. None of them can write to the CRM: they can only open PRs.</p>
+    <div class="agents rv">
+      <div><div class="ico"><svg><use href="#i-pr"/></svg></div><h3>Inbox agent</h3><p>Reads email threads and keeps contacts, deals and stages current, quoting the email as evidence.</p><div class="ex"><b>Opens:</b> Acme, Discovery → Negotiation, $20k → $45k</div></div>
+      <div><div class="ico"><svg><use href="#i-users"/></svg></div><h3>Hygiene agent</h3><p>Finds duplicate contacts and normalizes names, titles and phone numbers.</p><div class="ex"><b>Opens:</b> merge "Priya S." into "Priya Sharma"</div></div>
+      <div><div class="ico"><svg><use href="#i-over"/></svg></div><h3>Schema agent</h3><p>Notices information the CRM has no field for and proposes the field, with a backfill.</p><div class="ex"><b>Opens:</b> add <code style="font-size:12px">deal.procurementContact</code>, fill 4 deals</div></div>
+      <div><div class="ico"><svg><use href="#i-clock"/></svg></div><h3>Web watcher</h3><p>Watches account websites (careers, pricing, about) and turns changes into signals. Scrapes real sites via Firecrawl.</p><div class="ex"><b>Opens:</b> Northwind headcount 180 → 220 (auto-merges)</div></div>
+    </div>
+    <div class="byo rv">
+      <div class="ico"><svg><use href="#i-arrow"/></svg></div>
+      <p><b>Already have agents?</b> Point them at the Attio- or HubSpot-compatible proxy and name them with one header. Every write they make becomes a PR with the same policy, trust, conflict and revert rules.</p>
+      <a class="btn sm" href="#features">See the proxy</a>
+    </div>
+    <div class="access rv">
+      <a href="/demo"><b>Run them</b>Demo console: run all four in chaos or governed mode.</a>
+      <a href="/crm"><b>Point one at a real site</b>Records → "Watch account by URL" sends the web watcher to any company website.</a>
+      <a href="/settings"><b>Check their record</b>Settings → Agents &amp; trust: level, score, merged and reverted PRs.</a>
+      <a href="/settings"><b>Set the rules</b>Settings → Branch protection: edit what auto-merges and what waits.</a>
+    </div>
+  </div>
+</section>
+
+<!-- RUN IT TODAY -->
+<section id="run">
+  <div class="frame pad sec">
+    <span class="eyebrow"><i></i>Run it today</span>
+    <h2 class="h2 rv">Three ways to try Git CRM, from two minutes to your own CRM.</h2>
+    <p class="lead rv">No sign-up, no API keys needed for the first two. Everything below works as of today's build.</p>
+    <div class="tracks">
+      <div class="track rv">
+        <div class="th"><span class="time">2 minutes · nothing to install</span><h3>Try the live demo</h3><p>A synthetic CRM (10 companies, 25 contacts, 10 deals, $600k pipeline) running on our server.</p></div>
+        <ol>
+          <li>Open the <a href="/demo" style="color:var(--blue)">demo console</a> and click <b>Reset world</b><span>It's one shared world, so reset if someone got there first.</span></li>
+          <li>Click <b>Run chaos</b><span>Four agents write straight to the CRM. The forecast drifts to $625k and two different Alex Chens get merged.</span></li>
+          <li>Click <b>Reset world</b>, then <b>Run governed</b><span>Same agents, now on branches. PRs stream into the inbox; low-risk ones auto-merge.</span></li>
+          <li>Open <a href="/prs" style="color:var(--blue)">Pull requests</a><span>Filter by "Needs you", group by category, resolve the Northwind conflict, merge or close.</span></li>
+          <li>Back in the console, click <b>Inject email</b><span>"Acme is pausing" lands, and the open Acme PR flips to stale on its own.</span></li>
+          <li>Open <a href="/timeline" style="color:var(--blue)">Time travel</a><span>Drag back, then "Restore to this point". Revert any merged PR from its page.</span></li>
+        </ol>
+        <div class="tf"><a class="btn primary sm" href="/demo"><svg><use href="#i-play"/></svg>Open the demo console</a></div>
+      </div>
+
+      <div class="track rv">
+        <div class="th"><span class="time">5 minutes · Node 20+</span><h3>Run it on your laptop</h3><p>The full app and all four agents, locally, with no keys. Same demo world, all yours.</p></div>
+        <ol style="flex:none">
+          <li>Clone and install<span>Then open <code>localhost:3000/demo</code> and follow the steps on the left.</span></li>
+        </ol>
+        <div class="tf" style="flex:1;padding-top:6px">
+          <div class="code-hd" style="border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0"><span>bash</span><button class="copybtn" type="button" data-copy="local">Copy</button></div>
+<pre class="code" id="local" style="border-radius:0 0 10px 10px;margin-top:0"><span class="k">git</span> clone https://github.com/Welddevelopment/git_crm
+<span class="k">cd</span> git_crm
+<span class="k">npm</span> install
+<span class="k">npm</span> run dev        <span class="c"># http://localhost:3000</span>
+<span class="k">npm</span> test           <span class="c"># 225 tests</span>
+
+<span class="c"># optional: agents from the terminal</span>
+<span class="k">npx</span> tsx scripts/run-fleet.ts --chaos
+<span class="k">npx</span> tsx scripts/run-fleet.ts</pre>
+          <p style="font-size:13.5px;color:var(--ink-2);margin:14px 0 0">Add <code style="font-size:12px;background:var(--blue-soft);color:var(--blue);padding:1px 5px;border-radius:5px">ANTHROPIC_API_KEY</code> to <code style="font-size:12px;background:var(--blue-soft);color:var(--blue);padding:1px 5px;border-radius:5px">.env.local</code> to switch agents and the staleness judge to Claude.</p>
+        </div>
+      </div>
+
+      <div class="track rv">
+        <div class="th"><span class="time">~15 minutes · your data</span><h3>Connect your Attio or HubSpot</h3><p>Self-host one copy per workspace. Your team keeps working in their CRM as usual.</p></div>
+        <ol>
+          <li>Deploy your own copy<span>Railway works out of the box (<code>railway.json</code> is included), or any Node host: <code>npm run build &amp;&amp; npm start</code>.</span></li>
+          <li>Create a CRM token and set it on the server<span>Attio: an access token with records read-write and object configuration read → <code>ATTIO_TOKEN</code>. HubSpot: a private app with companies, contacts and deals read + write → <code>HUBSPOT_TOKEN</code>.</span></li>
+          <li>Settings → Integrations → <b>Import now</b><span>Pulls your companies, people and deals into main, then syncs edits from your CRM every 20 seconds.</span></li>
+          <li>Install the Chrome extension<span>Load it unpacked, then set "Git CRM server" to your URL. Pending PRs appear next to the record in Attio or HubSpot.</span></li>
+          <li>Route your agents through the proxy<span>Swap their base URL for <code>https://your-host/api/proxy/attio/v2/…</code> (or <code>/hubspot/…</code>) and add an <code>x-mainline-agent</code> header.</span></li>
+        </ol>
+        <div class="tf"><a class="btn sm" href="/extension"><svg><use href="#i-puzzle"/></svg>Extension install guide</a></div>
+      </div>
+    </div>
+
+    <div class="envt rv">
+      <div class="er eh"><div>Environment variable</div><div>What it does (all optional)</div></div>
+      <div class="er"><div>ANTHROPIC_API_KEY</div><div>Agents and the staleness judge use Claude instead of deterministic rules</div></div>
+      <div class="er"><div>FIRECRAWL_API_KEY</div><div>The web watcher scrapes real websites ("Watch account by URL")</div></div>
+      <div class="er"><div>ATTIO_TOKEN · HUBSPOT_TOKEN</div><div>Two-way sync: import records, pick up human edits, write merged PRs back</div></div>
+      <div class="er"><div>MAINLINE_DATA_DIR</div><div>Persist the event log to disk (with a volume). Without it, history lives in memory and resets on restart</div></div>
+      <div class="er"><div>PHOTON_API_KEY · PHOTON_TO · PHOTON_ENDPOINT</div><div>Text notification when a PR needs review</div></div>
+    </div>
+
+    <div class="after">
+      <div class="box ok rv">
+        <h3>Once it's connected</h3>
+        <ul class="limits">
+          <li><b>Your team edits in Attio or HubSpot as normal.</b> Their edits sync onto main within ~20 seconds. That's what makes conflicts and staleness real.</li>
+          <li><b>Agents get a 202 and a PR number</b> instead of writing. Low-risk changes auto-merge; money, stage, dedups and schema wait for a person.</li>
+          <li><b>Approve in Git CRM or on the record itself</b> via the side panel. Approved changes are written back to your CRM.</li>
+          <li><b>Undo anything:</b> revert a PR, or restore the whole CRM to a moment. Both write back to your CRM too.</li>
+        </ul>
+      </div>
+      <div class="box rv">
+        <h3>What's not there yet</h3>
+        <ul class="limits">
+          <li><b>One workspace per deployment, no login.</b> The CRM token is a server setting, and anyone with your URL can merge. "Connect Attio" OAuth and accounts are next.</li>
+          <li><b>Only agents you route through the proxy are governed.</b> An agent holding its own CRM token can still bypass Git CRM.</li>
+          <li><b>The proxy covers companies, people and deals</b> on core fields (name, domain, headcount, industry, email, title, phone, amount, stage). Notes, tasks, lists and custom attributes pass by.</li>
+          <li><b>The inbox agent reads the demo emails</b>; there's no Gmail connection yet. Human edits made directly in your CRM aren't PRs, but restore-to-a-point covers them.</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -503,10 +715,10 @@ footer a:hover{color:var(--ink)}
   <div class="frame pad final">
     <span class="eyebrow"><i></i>Git CRM</span>
     <h2 class="rv">Let your agents ship. Keep the merge button.</h2>
-    <p class="rv">Run the 90-second demo: chaos mode, then governed mode, a conflict, a stale PR, a schema change, time travel and a revert.</p>
+    <p class="rv">Run the 2-minute demo: chaos mode, then governed mode, a conflict, a stale PR, a schema change, a revert, and a restore of the whole CRM.</p>
     <div class="ctas">
       <a class="btn primary" href="/demo"><svg><use href="#i-play"/></svg>Try the live demo</a>
-      <a class="btn" href="/extension"><svg><use href="#i-puzzle"/></svg>Install the Chrome extension</a>
+      <a class="btn" href="#run"><svg><use href="#i-arrow"/></svg>Run it yourself</a>
       <a class="btn" href="https://github.com/Welddevelopment/git_crm"><svg><use href="#i-gh"/></svg>View on GitHub</a>
     </div>
   </div>
@@ -517,7 +729,7 @@ footer a:hover{color:var(--ink)}
   <footer>
     <span class="logo" style="font-size:15px"><span class="mark" style="width:22px;height:22px;font-size:12px;border-radius:6px">G</span>Git CRM</span>
     <span>Built at Night Hack by Founders, Inc. · Oct 30 2026</span>
-    <nav aria-label="Footer"><a href="/demo">Demo</a><a href="/prs">Pull requests</a><a href="/extension">Extension</a><a href="https://github.com/Welddevelopment/git_crm">GitHub</a></nav>
+    <nav aria-label="Footer"><a href="#run">Run it today</a><a href="/demo">Demo</a><a href="/timeline">Time travel</a><a href="/prs">Pull requests</a><a href="/extension">Extension</a><a href="https://github.com/Welddevelopment/git_crm">GitHub</a></nav>
   </footer>
 </div>
 
