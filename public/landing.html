@@ -1,0 +1,1312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mainline: Pull requests for your CRM</title>
+<meta name="description" content="Agents never write to your CRM. They open PRs against it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --fg:#1a1b1e; --fg2:#525760; --muted:#73777f; --faint:#9a9ea6;
+  --bg:#ffffff; --bg2:#fafafa; --bg3:#f3f4f6;
+  --line:#e7e8eb; --line2:#dcdee3; --btnline:#d1d4da;
+  --dark:#111111; --dark2:#181818; --dark3:#222222; --dline:#262626; --dline2:#333333;
+  --dfg:#f9f9f9; --dmuted:#8b8d93;
+  --blue:#3a5bd9; --blue-bg:#e6edfb; --blue-dk:#c7d8f7; --blue-dkbg:#1b2233;
+  --accent:#2f6bf0; --green:#1f9d55; --green-bg:#e3f5ea; --red:#e5484d; --red-bg:#fdecec; --amber:#e9a23b; --amber-bg:#fdf3e1; --violet:#7c5cf5;
+  --frame:1392px;
+  --sans:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --serif:"Newsreader",Georgia,serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:22px;letter-spacing:-.01em;font-weight:500;-webkit-font-smoothing:antialiased;font-optical-sizing:auto}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;letter-spacing:inherit}
+img,svg{display:block}
+.gray{color:var(--muted)}
+.frame{max-width:var(--frame);margin:0 auto;border-left:1px solid var(--line);border-right:1px solid var(--line);position:relative}
+.dark .frame{border-color:var(--dline)}
+.pad{padding-left:58px;padding-right:58px}
+
+/* ---------- buttons, badges ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:10px;font-size:14px;line-height:20px;letter-spacing:-.005em;font-weight:500;border:1px solid var(--btnline);background:#fff;color:#2b2e33;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(16,17,20,.04);transition:background .15s,border-color .15s}
+.btn:hover{background:#f6f7f8}
+.btn.primary{background:#1f2023;border-color:#3e4249;color:#f2f3f4;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 2px rgba(0,0,0,.2)}
+.btn.primary:hover{background:#2b2c30}
+.btn.sm{height:28px;padding:0 8px;font-size:12px;border-radius:8px}
+.btn .arr{width:12px;height:12px}
+.dark .btn{background:#181818;border-color:#333;color:#e6e6e6}
+.dark .btn:hover{background:#222}
+.dark .btn.primary{background:#2e2f33;border-color:#45474d;color:#fafafa}
+.badge{display:inline-flex;align-items:center;height:24px;padding:0 6px;border-radius:8px;font-size:14px;line-height:20px;letter-spacing:-.01em;font-weight:500;background:var(--blue-bg);color:var(--blue)}
+.dark .badge{background:var(--blue-dkbg);color:var(--blue-dk)}
+h1,h2,h3,h4{margin:0;font-weight:500}
+.h2{font-size:40px;line-height:44px;letter-spacing:-.01em;font-weight:500}
+.h3{font-size:24px;line-height:27.6px;letter-spacing:-.01em;font-weight:500}
+
+/* ---------- vertical hairline stripe pattern ---------- */
+.stripes{background-image:repeating-linear-gradient(90deg,rgba(26,27,30,.07) 0 1px,transparent 1px 8px)}
+.dark .stripes,.stripes.on-dark{background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 8px)}
+.dots{background-image:radial-gradient(rgba(26,27,30,.09) 1px,transparent 1px);background-size:12px 12px}
+
+/* ---------- header ---------- */
+.announce{height:44px;background:#0b0b0b;color:#f2f2f2;font-size:13px;line-height:18px;display:flex;align-items:center;justify-content:center;position:relative;z-index:60}
+.announce a{display:inline-flex;align-items:center;gap:6px}
+.announce a:hover{opacity:.85}
+.announce .x{position:absolute;right:28px;top:50%;transform:translateY(-50%);background:none;border:0;color:#bdbdbd;cursor:pointer;padding:6px}
+header.site{position:sticky;top:0;z-index:50;height:72px;background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid transparent;transition:background .25s,border-color .25s,color .25s}
+header.site.scrolled{border-bottom-color:var(--line)}
+header.site .in{max-width:1512px;margin:0 auto;height:100%;display:flex;align-items:center;padding:0 60px}
+.logo{display:flex;align-items:center;gap:7px;font-size:21px;font-weight:600;letter-spacing:-.04em}
+.logo svg{width:22px;height:22px}
+nav.main{display:flex;align-items:center;gap:2px;margin-left:36px}
+nav.main a,nav.main button{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 10px;border-radius:8px;font-size:14px;line-height:20px;color:#2b2e33;background:none;border:0;cursor:pointer}
+nav.main a:hover,nav.main button:hover{background:rgba(26,27,30,.05)}
+nav.main .chev{width:10px;height:10px;opacity:.6}
+header.site .right{margin-left:auto;display:flex;gap:8px}
+header.site.on-dark{background:rgba(17,17,17,.92);color:var(--dfg);border-bottom-color:var(--dline)}
+header.site.on-dark nav.main a,header.site.on-dark nav.main button{color:#e7e7e7}
+header.site.on-dark nav.main a:hover,header.site.on-dark nav.main button:hover{background:rgba(255,255,255,.06)}
+header.site.on-dark .btn{background:#181818;border-color:#333;color:#e6e6e6}
+header.site.on-dark .btn.primary{background:#2e2f33;border-color:#45474d;color:#fafafa}
+.menu-btn{display:none}
+
+/* ---------- hero ---------- */
+.hero{position:relative;border-bottom:1px solid var(--line);overflow:hidden;background:#fff}
+.hero .glow{position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,#e9ebfd 38%,#c9cff8 100%);pointer-events:none}
+.hero .glow::after{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.55) 0 1px,transparent 1px 6px);-webkit-mask-image:linear-gradient(180deg,transparent,#000 60%);mask-image:linear-gradient(180deg,transparent,#000 60%)}
+.hero .top{position:relative;text-align:center;padding:108px 24px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 12px;border-radius:999px;border:1px solid var(--line2);font-size:12px;line-height:16px;color:#2b2e33;background:#fff;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.pill:hover{background:#f7f7f8}
+.pill svg{width:10px;height:10px;opacity:.6}
+.hero h1{margin-top:24px;font-size:64px;line-height:60.8px;letter-spacing:-.02em;font-weight:600}
+.hero p.sub{margin:26px auto 0;max-width:430px;font-size:18px;line-height:24px;letter-spacing:-.015em;color:var(--fg2);font-weight:500}
+.hero .ctas{margin-top:30px;display:flex;gap:8px;justify-content:center}
+.hero .stage{position:relative;max-width:1132px;margin:94px auto 0;padding-bottom:120px}
+
+/* window chrome */
+.win{background:#fff;border:1px solid var(--line2);border-radius:12px;box-shadow:0 1px 1px rgba(16,17,20,.03),0 12px 32px -8px rgba(30,35,80,.14),0 40px 80px -20px rgba(30,35,80,.12);overflow:hidden;position:relative}
+.win .bar{height:28px;display:flex;align-items:center;gap:6px;padding:0 12px;background:#f7f7f8;border-bottom:1px solid var(--line)}
+.win .bar i{width:10px;height:10px;border-radius:50%;background:#ff5f57}.win .bar i:nth-child(2){background:#febc2e}.win .bar i:nth-child(3){background:#28c840}
+.app{display:grid;grid-template-columns:248px 1fr;height:570px;font-size:13px;line-height:18px;letter-spacing:-.005em}
+.app .side{border-right:1px solid var(--line);padding:10px 8px;background:#fcfcfc;display:flex;flex-direction:column;gap:2px}
+.ws{display:flex;align-items:center;gap:8px;padding:4px 6px 10px;font-weight:600;font-size:14px}
+.ws .mark{width:20px;height:20px;border-radius:6px;background:#1f2023;color:#fff;display:grid;place-items:center;font-size:11px}
+.qa{display:flex;align-items:center;gap:6px;margin:0 0 8px}
+.qa .box{flex:1;height:28px;border:1px solid var(--line2);border-radius:8px;display:flex;align-items:center;gap:6px;padding:0 8px;color:#3a3d43;background:#fff}
+.kbd{margin-left:auto;font-size:10px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:0 4px;line-height:14px}
+.qa .ib{width:28px;height:28px;border:1px solid var(--line2);border-radius:8px;display:grid;place-items:center;background:#fff;color:#555}
+.si{display:flex;align-items:center;gap:8px;height:28px;padding:0 8px;border-radius:6px;color:#3a3d43}
+.si svg{width:14px;height:14px;color:#6b6f77;flex:none}
+.si.on{background:#efeff1;color:var(--fg)}
+.si .n{margin-left:auto;font-size:11px;color:var(--faint)}
+.side .lbl{font-size:11px;color:var(--faint);padding:12px 8px 4px}
+.app .mainc{display:flex;flex-direction:column;min-width:0}
+.tb{height:44px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 14px;color:#3a3d43}
+.tb .crumb{display:flex;align-items:center;gap:6px}
+.tb .crumb b{font-weight:500;color:var(--fg)}
+.tb .r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.av{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-size:7.5px;letter-spacing:-.02em;font-weight:600;color:#fff;border:1.5px solid #fff;flex:none}
+.avs{display:flex}.avs .av+.av{margin-left:-6px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 6px;border-radius:6px;font-size:11px;line-height:14px;font-weight:500;background:#f1f2f4;color:#4a4e56;white-space:nowrap}
+.chip.g{background:var(--green-bg);color:#137a3f}.chip.r{background:var(--red-bg);color:#c0343a}.chip.a{background:var(--amber-bg);color:#a8670f}.chip.b{background:var(--blue-bg);color:var(--blue)}.chip.v{background:#efeafe;color:#6544e0}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:0}
+
+/* hero app content: PR view + chat */
+.prv{display:grid;grid-template-columns:1fr 330px;flex:1;min-height:0}
+.prv .l{padding:18px 22px;overflow:hidden;border-right:1px solid var(--line)}
+.prv .ttl{font-size:17px;line-height:22px;font-weight:600;letter-spacing:-.015em;display:flex;align-items:center;gap:8px}
+.prv .meta{margin-top:6px;color:var(--muted);font-size:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tabs-s{display:flex;gap:16px;border-bottom:1px solid var(--line);margin-top:14px;font-size:12px;color:var(--muted)}
+.tabs-s span{padding:6px 0}
+.tabs-s .on{color:var(--fg);box-shadow:inset 0 -1.5px 0 var(--fg)}
+.diff{margin-top:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.diff .h{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fafafa;border-bottom:1px solid var(--line);font-size:12px}
+.diff .row{display:grid;grid-template-columns:120px 1fr 1fr;font-size:12px;border-bottom:1px solid #f0f1f3}
+.diff .row:last-child{border-bottom:0}
+.diff .row>div{padding:6px 10px}
+.diff .k{color:var(--muted)}
+.diff .old{background:#fff5f5;color:#b4363b;text-decoration:line-through;text-decoration-color:rgba(180,54,59,.4)}
+.diff .new{background:#f1fbf4;color:#16743d}
+.ev{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.ev .e{display:flex;align-items:center;gap:8px;font-size:12px;color:#3a3d43;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.ev .e svg{width:13px;height:13px;color:var(--muted)}
+.ev .e .t{margin-left:auto;color:var(--faint);font-size:11px}
+.chat{display:flex;flex-direction:column;padding:16px;gap:12px;background:#fff;min-height:0}
+.bub{align-self:flex-end;background:#f1f2f4;border-radius:10px;padding:7px 10px;font-size:12px;max-width:90%}
+.ans{font-size:12px;line-height:18px;color:#2b2e33}
+.ans .tool{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;margin-bottom:6px}
+.ans ul{margin:6px 0 0;padding-left:16px}
+.ans li{margin:2px 0}
+.inp{margin-top:auto;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;color:var(--faint);font-size:12px;height:62px;position:relative;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.inp .send{position:absolute;right:8px;bottom:8px;width:20px;height:20px;border-radius:6px;background:var(--accent);display:grid;place-items:center}
+.inp .send svg{width:10px;height:10px;color:#fff}
+.inp .m{position:absolute;right:34px;bottom:10px;font-size:10px;color:var(--faint)}
+.term{position:absolute;left:-58px;bottom:56px;width:284px;height:300px;border-radius:12px;background:rgba(24,24,26,.94);border:1px solid #333;box-shadow:0 24px 48px -12px rgba(0,0,0,.35);overflow:hidden;font-family:var(--mono);font-size:10.5px;line-height:16px;color:#c8c8c8}
+.term .bar{background:transparent;border-bottom:1px solid #2a2a2a}
+.term pre{margin:0;padding:10px 12px;white-space:pre-wrap;font-family:inherit}
+.term .c1{color:#7aa2f7}.term .c2{color:#9ece6a}.term .c3{color:#e0af68}.term .c4{color:#777}
+
+/* ---------- logo strip ---------- */
+.logos{background:var(--bg2);border-bottom:1px solid var(--line)}
+.logos .grid{display:grid;grid-template-columns:repeat(5,1fr)}
+.logos .cell{height:97px;display:grid;place-items:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line);position:relative;color:#2a2c31;transition:background .2s}
+.logos .cell:nth-child(5n){border-right:0}
+.logos .cell:nth-child(n+6){border-bottom:0}
+.logos .cell:hover{background:#fff}
+.logos .cell .ne{position:absolute;top:10px;right:10px;width:10px;height:10px;color:#9a9ea6}
+.wm{font-size:22px;letter-spacing:-.03em;font-weight:600;display:flex;align-items:center;gap:8px;opacity:.88}
+.wm.m{font-family:var(--mono);font-weight:500;font-size:19px;letter-spacing:-.02em}
+.wm.s{font-family:var(--serif);font-weight:400;font-size:25px;letter-spacing:-.01em}
+.wm.c{font-weight:700;letter-spacing:.06em;font-size:16px;text-transform:uppercase}
+.wm .g{width:20px;height:20px}
+
+/* ---------- platform ---------- */
+.sec2{background:var(--bg2)}
+.plat-head{padding:72px 58px 66px;border-bottom:1px solid var(--line)}
+.plat-head .h2{margin-top:16px;max-width:860px}
+.plat{display:grid;grid-template-columns:348px minmax(0,1fr)}
+.plat .nav{border-right:1px solid var(--line);position:relative}
+.plat .nav .stick{position:sticky;top:116px;padding:126px 0 0}
+.plat .nav a{display:block;padding:5px 58px;font-size:18px;line-height:28px;letter-spacing:-.015em;color:#c4c6cb;position:relative;transition:color .2s}
+.plat .nav a:hover{color:#8a8e96}
+.plat .nav a.on{color:var(--fg)}
+.plat .nav a.on::before{content:"";position:absolute;left:-1px;top:4px;bottom:4px;width:2px;background:var(--fg)}
+.feat{border-bottom:1px solid var(--line)}
+.feat:last-child{border-bottom:0}
+.feat .intro{padding:116px 58px 72px;border-bottom:1px solid var(--line)}
+.feat .intro .h3{max-width:430px}
+.shot{background:var(--bg3);padding:56px 72px;display:flex;justify-content:center;position:relative;overflow:hidden}
+.pair{display:grid;grid-template-columns:1fr 1fr}
+.pair>div{padding:28px 28px 0;min-height:440px;display:flex;flex-direction:column;overflow:hidden}
+.pair>div+div{border-left:1px solid var(--line)}
+.pair .t{font-size:16px;line-height:22px;letter-spacing:-.01em}
+.pair .d{font-size:14px;line-height:20px;color:var(--muted);max-width:330px;margin-top:2px}
+.pair .viz{flex:1;display:flex;align-items:center;justify-content:center;padding:28px 0}
+.card{max-width:100%;background:#fff;border:1px solid var(--line2);border-radius:12px;box-shadow:0 1px 2px rgba(16,17,20,.04),0 8px 24px -10px rgba(16,17,20,.10)}
+
+/* table mock */
+.tbl{width:100%;max-width:820px;font-size:12px;line-height:16px}
+.tbl .tbh{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.tbl .tbh2{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.tbl table{width:100%;border-collapse:collapse}
+.tbl th{font-weight:500;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);border-right:1px solid #f0f1f3;white-space:nowrap}
+.tbl td{padding:7px 10px;border-bottom:1px solid #f0f1f3;border-right:1px solid #f0f1f3;white-space:nowrap;color:#2b2e33}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td u{text-decoration-color:#c5c8ce;text-underline-offset:2px}
+.score{display:inline-block;min-width:24px;text-align:center;border-radius:5px;padding:1px 4px;background:var(--green-bg);color:#137a3f;font-weight:600}
+.ck{width:12px;height:12px;border:1px solid #c9ccd2;border-radius:3px;display:inline-block;vertical-align:middle}
+.float{position:absolute;right:28px;top:40px;width:330px;font-size:12px;line-height:17px}
+.float .fh{padding:10px 12px 0;color:var(--muted);font-size:11px}
+.float .ft{padding:2px 12px;font-weight:600;font-size:14px;line-height:20px}
+.float .fd{padding:2px 12px 10px;color:var(--muted)}
+.float .fr{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:8px 12px}
+.float .body{border-top:1px solid var(--line);padding:10px 12px;color:#2b2e33;min-height:120px}
+.float .act{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:8px 12px}
+.bb{background:var(--accent);color:#fff;border-radius:6px;padding:3px 8px;font-size:11px}
+
+/* chat input mock */
+.ask{width:300px;height:44px;border:1px solid var(--line2);border-radius:10px;background:#fff;display:flex;align-items:center;padding:0 8px 0 12px;font-size:12px;color:#2b2e33;box-shadow:0 1px 2px rgba(16,17,20,.05),0 8px 20px -10px rgba(16,17,20,.15)}
+.ask .caret{width:1px;height:14px;background:#2b2e33;margin-left:2px;animation:blink 1s steps(1) infinite}
+.ask .send{margin-left:auto;width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center}
+.ask .send svg{width:10px;height:10px;color:#fff}
+@keyframes blink{50%{opacity:0}}
+.rings{position:relative;width:300px;height:300px}
+.rings span.ring{position:absolute;border-radius:50%;border:1px solid #e3e4e8;left:50%;top:50%;transform:translate(-50%,-50%)}
+.rings .core{position:absolute;left:50%;top:50%;width:76px;height:76px;transform:translate(-50%,-50%);border-radius:50%;background:#fff;box-shadow:0 6px 20px -6px rgba(16,17,20,.25);display:grid;place-items:center}
+.rings .core svg{width:34px;height:34px}
+.rings .chip{position:absolute;height:22px;border-radius:7px;font-size:11px;box-shadow:0 2px 6px -2px rgba(16,17,20,.12)}
+
+/* workflow diagram */
+.flow{position:relative;width:100%;max-width:880px;height:470px}
+.node{position:absolute;width:214px;background:#fff;border:1px solid var(--line2);border-radius:10px;padding:9px 12px;font-size:12px;line-height:16px;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.node .nt{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;line-height:18px}
+.node .ni{width:20px;height:20px;border-radius:6px;display:grid;place-items:center}
+.node .ni svg{width:12px;height:12px}
+.node .nd{color:var(--muted);margin-top:2px;padding-left:28px}
+.node.sel{border-color:#8fb0f7;box-shadow:0 0 0 3px rgba(47,107,240,.12)}
+.node .done{position:absolute;top:-22px;left:0;font-size:10.5px;color:#137a3f;background:var(--green-bg);border-radius:5px;padding:1px 6px;display:flex;align-items:center;gap:4px}
+.flow svg.wires{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.flow .tf{position:absolute;font-size:10.5px;color:var(--muted)}
+
+/* kanban */
+.kan{display:flex;gap:10px;width:100%;max-width:880px}
+.col{flex:1;min-width:0;background:#f7f7f8;border-radius:10px;padding:8px}
+.col .ch{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 4px 8px;font-weight:600}
+.col .ch .cnt{font-weight:500;color:var(--muted);background:#ececef;border-radius:5px;padding:0 5px;font-size:11px}
+.kc{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11.5px;line-height:16px;margin-bottom:8px;box-shadow:0 1px 1px rgba(16,17,20,.03)}
+.kc .kt{font-weight:600;text-decoration:underline;text-decoration-color:#c5c8ce;text-underline-offset:2px;font-size:12px}
+.kc .kr{display:flex;align-items:center;gap:6px;margin-top:5px;color:#3a3d43}
+.kc .kr svg{width:12px;height:12px;color:var(--muted);flex:none}
+.kc .kf{display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--faint);font-size:10.5px}
+.kc .kf .d{margin-left:auto}
+
+/* contact card / conflict */
+.ccard{width:300px;font-size:12px;line-height:17px;padding:10px 0}
+.ccard .r{display:flex;align-items:center;gap:10px;padding:5px 14px;color:#2b2e33}
+.ccard .r svg{width:13px;height:13px;color:var(--muted);flex:none}
+.ccard .r .k{color:var(--muted);width:78px;flex:none}
+.cf{margin:8px 14px 4px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cf .o{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer}
+.cf .o:last-child{border-bottom:0}
+.cf .o .rd{width:12px;height:12px;border-radius:50%;border:1px solid #bfc3ca}
+.cf .o.sel{background:#f5f8ff}
+.cf .o.sel .rd{border:4px solid var(--accent)}
+.cf .o .v{margin-left:auto;font-weight:600}
+.think{width:340px;padding:14px;font-size:12px;line-height:18px;color:#2b2e33}
+.think .th{color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:10px}
+.reb{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-top:8px}
+.reb svg{width:13px;height:13px;color:var(--muted)}
+
+/* chat panel (staleness) */
+.cpanel{width:100%;max-width:880px;position:relative}
+.cpanel .q{display:flex;justify-content:flex-end;margin-bottom:12px}
+.cpanel .q span{background:#e9eaed;border-radius:10px;padding:6px 10px;font-size:12px}
+.cpanel .resp{padding:16px 18px 18px;font-size:12.5px;line-height:19px;color:#2b2e33}
+.cpanel .tools{color:var(--muted);font-size:11.5px;display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.cpanel pre{margin:10px 0;background:#fafafa;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11px;line-height:17px;color:#3a3d43;overflow:hidden}
+.cpanel pre .kw{color:#7c5cf5}.cpanel pre .s{color:#137a3f}.cpanel pre .c{color:var(--faint)}
+.stale{display:flex;gap:10px;align-items:flex-start;margin-top:12px;border:1px solid #f3c9a0;background:#fff8f0;border-radius:8px;padding:10px 12px}
+.stale svg{width:14px;height:14px;color:#c06a12;flex:none;margin-top:2px}
+.cpanel .bar{margin-top:14px;border:1px solid var(--line2);border-radius:10px;height:44px;display:flex;align-items:center;padding:0 10px 0 12px;color:var(--faint);font-size:12px;background:#fff}
+
+/* charts */
+.charts{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;width:100%;max-width:880px}
+.chart{padding:14px 16px;font-size:12px}
+.chart .ch{display:flex;align-items:center;gap:6px;font-weight:600}
+.chart .ch .dots3{margin-left:auto;color:var(--faint)}
+.legend{display:flex;justify-content:center;gap:14px;margin:10px 0 6px;color:#3a3d43;font-size:11px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.bars{display:flex;align-items:flex-end;gap:22px;height:170px;padding:0 10px 0 32px;position:relative;border-bottom:1px solid var(--line)}
+.bars .gl{position:absolute;left:32px;right:0;border-top:1px dashed #eceef1;font-size:10px;color:var(--faint)}
+.bars .gl span{position:absolute;left:-28px;top:-7px;width:22px;text-align:right}
+.bars .b{flex:1;display:flex;flex-direction:column-reverse;position:relative;z-index:1}
+.bars .b i{display:block}
+.bars .b i:last-child{border-radius:3px 3px 0 0}
+.xl{display:flex;gap:22px;padding:6px 10px 0 32px;font-size:10.5px;color:var(--muted)}
+.xl span{flex:1;text-align:center}
+.mini{padding:14px 16px;font-size:12px;display:flex;flex-direction:column;gap:10px}
+.mini .row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f1f3}
+.mini .row:last-child{border:0}
+.mini .row .amt{margin-left:auto;font-weight:600}
+
+/* ---------- self-building ---------- */
+.selfb{text-align:center;padding:96px 58px 0;position:relative;overflow:hidden}
+.selfb .h2{margin:16px auto 0;max-width:900px}
+.selfb .btn{margin-top:28px}
+.selfb .wrap{position:relative;margin-top:64px;padding:0 0}
+.selfb .wrap::before{content:"";position:absolute;left:-58px;right:-58px;top:-90px;height:90px;background-image:repeating-linear-gradient(90deg,rgba(26,27,30,.07) 0 1px,transparent 1px 8px);-webkit-mask-image:linear-gradient(180deg,transparent,#000);mask-image:linear-gradient(180deg,transparent,#000)}
+.rec{max-width:1148px;margin:0 auto;display:grid;grid-template-columns:330px 1fr;text-align:left;font-size:12px;line-height:17px;border-radius:12px 12px 0 0;border-bottom:0;box-shadow:0 -1px 0 var(--line2),0 8px 30px -12px rgba(16,17,20,.12)}
+.rec .lp{border-right:1px solid var(--line);padding:18px}
+.rec .who{display:flex;align-items:center;justify-content:space-between}
+.rec .pic{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#f5b48c,#d9739a);display:grid;place-items:center;color:#fff;font-weight:600;font-size:14px}
+.rec .nm{font-size:18px;line-height:24px;font-weight:600;letter-spacing:-.015em;margin-top:10px}
+.rec .acts{display:flex;gap:6px;margin-top:10px}
+.rec .acts .btn{margin:0;height:28px;font-size:12px;padding:0 8px;border-radius:8px}
+.rec .acts .ib{width:28px;padding:0;justify-content:center}
+.rec .det{margin-top:18px}
+.rec .det .dh{color:var(--muted);display:flex;align-items:center;gap:4px;margin-bottom:6px}
+.rec .det .r{display:flex;align-items:center;gap:8px;padding:5px 0}
+.rec .det .r svg{width:13px;height:13px;color:var(--muted)}
+.rec .det .k{width:86px;color:var(--muted)}
+.rec .det .lnk{color:var(--accent);background:#eef3fe;border-radius:5px;padding:0 4px}
+.rec .rp{padding:18px}
+.rec .hh{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px}
+.rec .hg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.rec .hc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-height:82px;background:#fff}
+.rec .hc.w2{grid-column:span 2}
+.rec .hc .hl{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.rec .hc .hv{margin-top:6px;color:#2b2e33}
+.rec .hc .hs{color:var(--faint);font-size:11px}
+.prog{display:flex;gap:3px;margin-top:8px}
+.prog i{flex:1;height:3px;border-radius:2px;background:#e7e8eb}
+.prog i.on{background:#2fae67}
+.feed{margin-top:16px}
+.feed .r{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f1f3}
+.feed .r:last-child{border:0}
+.feed .r .t{margin-left:auto;color:var(--faint);font-size:11px}
+.feed u{text-decoration-color:#c5c8ce;text-underline-offset:2px}
+
+/* ---------- dark ---------- */
+.dark{background:var(--dark);color:var(--dfg)}
+.dark .gray{color:var(--dmuted)}
+.uc{text-align:center;padding:152px 24px 0;position:relative;overflow:hidden}
+.uc .k{color:var(--dmuted);font-size:16px}
+.uc .big{font-size:96px;line-height:96px;letter-spacing:-.024em;font-weight:600;margin-top:10px;display:inline-flex;align-items:flex-start;gap:4px}
+.uc .big sup{font-size:22px;line-height:30px;font-weight:600}
+.arc{position:relative;height:420px;margin-top:40px}
+.arc .halo,.arc .rim,.arc .disk{position:absolute;left:50%;border-radius:50%;transform:translateX(-50%)}
+.arc .rim{top:0;width:1900px;height:1900px;background:conic-gradient(from 270deg,#d4612d 0deg,#e2a640 30deg,#e7d06a 55deg,#a9d39b 78deg,#6db9c5 102deg,#4f86e6 135deg,#3c6be0 180deg,#d4612d 360deg)}
+.arc .disk{top:2px;width:1896px;height:1896px;background:radial-gradient(circle at 50% 0%,#151515 0,#111 40%)}
+.arc .halo{top:-50px;width:2000px;height:2000px;background:conic-gradient(from 270deg,rgba(212,97,45,.55) 0deg,rgba(226,166,64,.35) 35deg,rgba(231,208,106,.12) 70deg,rgba(109,185,197,.12) 105deg,rgba(60,107,224,.55) 160deg,rgba(60,107,224,.5) 180deg,rgba(212,97,45,.5) 360deg);filter:blur(60px);opacity:.55}
+.arc .stripes-l{z-index:0}
+.arc .stripes-l{position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 8px)}
+.ucgrid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--dline);position:relative;background:var(--dark)}
+.ucgrid>div{padding:24px 28px 26px;min-height:278px;display:flex;flex-direction:column;border-right:1px solid var(--dline)}
+.ucgrid>div:last-child{border-right:0}
+.ucgrid svg{width:20px;height:20px;color:#a9abb0}
+.ucgrid .t{margin-top:auto;font-size:16px;line-height:22px}
+.ucgrid .d{font-size:14px;line-height:20px;color:var(--dmuted);margin-top:4px;max-width:180px}
+.sig{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--dline)}
+.sig .l{padding:96px 58px 72px;border-right:1px solid var(--dline);display:flex;flex-direction:column}
+.sig .l .h2{margin-top:16px;max-width:460px}
+.sig .l .btn{margin-top:28px;align-self:flex-start}
+.acc{margin-top:auto;padding-top:110px;max-width:580px}
+.acc .it{cursor:pointer;padding:12px 0}
+.acc .it .t{font-size:18px;line-height:26px;letter-spacing:-.015em}
+.acc .it .d{font-size:14px;line-height:20px;color:var(--dmuted);max-width:260px;max-height:0;overflow:hidden;transition:max-height .35s,margin .35s}
+.acc .it.on .d{max-height:60px;margin-top:4px}
+.acc .it .pb{height:1px;background:var(--dline2);margin-top:14px;position:relative;display:none}
+.acc .it.on .pb{display:block}
+.acc .it .pb i{position:absolute;left:0;top:-.5px;height:2px;background:#d9d9d9;width:0}
+.sig .r{position:relative;overflow:hidden;min-height:620px}
+.sig .r svg{position:absolute;inset:0;width:100%;height:100%}
+.conn{text-align:center;padding:150px 24px 64px;border-top:1px solid var(--dline);position:relative}
+.conn p{color:var(--dmuted);max-width:300px;margin:16px auto 0;font-size:14px;line-height:20px}
+.conn .h2{margin-top:16px}
+.conn .btn{margin-top:22px}
+.marq{overflow:hidden;margin-top:96px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marq .track{display:flex;gap:32px;width:max-content;animation:marq 40s linear infinite}
+.tile{width:96px;height:96px;border-radius:22px;background:linear-gradient(180deg,#2a2a2a,#1f1f1f);border:1px solid #2f2f2f;display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);flex:none}
+.tile svg{width:38px;height:38px;color:#ececec}
+@keyframes marq{to{transform:translateX(-50%)}}
+.sdk{border-top:1px solid var(--dline);padding:58px}
+.sdk .box{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--dline);min-height:404px}
+.sdk .box .l{padding:0 32px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--dline)}
+.sdk .box .l .btn{margin-top:24px;align-self:flex-start}
+.sdk .box .r{position:relative;overflow:hidden}
+.sdk .box .r svg{position:absolute;inset:0;width:100%;height:100%}
+.code{margin-top:28px;background:#161616;border:1px solid var(--dline);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:19px;color:#bdbdbd;max-width:470px}
+.code .k{color:#7aa2f7}.code .s{color:#9ece6a}.code .c{color:#5f5f5f}
+
+/* ---------- testimonial ---------- */
+.quote{padding:200px 58px;text-align:center}
+.quote blockquote{margin:0 auto;max-width:700px;font-family:var(--serif);font-weight:400;font-size:46px;line-height:52px;letter-spacing:-.015em;color:var(--fg)}
+.quote blockquote .gray{color:#a6a9b0}
+.quote .who{margin-top:34px;font-size:12px;line-height:18px}
+.quote .who b{font-weight:600;display:block}
+.quote .who span{color:var(--fg2)}
+
+/* ---------- scale ---------- */
+.scale{display:grid;grid-template-columns:1fr 1fr;position:relative;min-height:760px;border-top:1px solid var(--line)}
+.scale .l{padding:140px 58px 150px;position:relative;z-index:2}
+.scale .l .h2{margin-top:16px;max-width:470px}
+.stats{display:grid;grid-template-columns:auto auto;gap:30px 30px;margin-top:56px;max-width:420px}
+.stat{border-left:2px solid var(--accent);padding-left:24px}
+.stat .n{font-size:32px;line-height:39px;letter-spacing:-.01em}
+.stat .lb{font-size:16px;line-height:16px;color:var(--fg2);margin-top:2px}
+.scale .curve{position:absolute;inset:0;z-index:1;pointer-events:none}
+.scale .curve svg{width:100%;height:100%}
+
+/* ---------- stories ---------- */
+.stories{border-top:1px solid var(--line)}
+.stories .head{padding:150px 58px 96px}
+.stories .head .h2{margin-top:16px}
+.stories .head .btn{margin-top:28px}
+.stabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stabs button{height:80px;border:0;border-right:1px solid var(--line);background:var(--bg2);cursor:pointer;display:grid;place-items:center;color:#2a2c31;transition:background .2s}
+.stabs button:last-child{border-right:0}
+.stabs button.on{background:#fff}
+.stabs .wm{font-size:18px}
+.stabs .wm.s{font-size:21px}
+.stabs .wm.m{font-size:16px}
+.stabs .wm.c{font-size:14px}
+.feature{display:grid;grid-template-columns:1fr 1fr;min-height:550px}
+.feature .l{padding:58px;display:flex;flex-direction:column;justify-content:flex-end;border-right:1px solid var(--line)}
+.feature .cat{font-size:12px;line-height:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.feature .h3{font-size:32px;line-height:36px;letter-spacing:-.015em;margin-top:12px;max-width:420px}
+.feature .r{position:relative;overflow:hidden;background:linear-gradient(160deg,#dfe3ec,#b9c0cf 60%,#9aa3b6)}
+.feature .r .ph{position:absolute;inset:0;display:grid;place-items:center}
+.feature .r .card{width:340px;padding:16px;font-size:12px;line-height:18px}
+.fpane{display:none}.fpane.on{display:grid}
+
+/* ---------- changelog ---------- */
+.chlog{border-top:1px solid var(--line)}
+.chlog .head{padding:128px 58px 84px}
+.chlog .head .h2{margin-top:16px;max-width:620px}
+.chlog .head .btn{margin-top:28px}
+.cl{display:grid;grid-template-columns:repeat(4,1fr);padding:0 58px}
+.cl a{display:block;border-left:1px solid var(--line);padding:0 24px;min-height:256px}
+.cl a:hover .t{text-decoration:underline;text-underline-offset:3px;text-decoration-color:#c5c8ce}
+.cl .dt{font-size:12px;line-height:14px;color:var(--muted)}
+.cl .t{font-size:18px;line-height:24px;letter-spacing:-.01em;margin-top:12px}
+.cl .d{font-size:14px;line-height:20px;color:var(--muted);margin-top:2px;max-width:160px}
+.ticks{height:56px;margin:0 12px;background-image:repeating-linear-gradient(90deg,rgba(26,27,30,.12) 0 1px,transparent 1px 8px);-webkit-mask-image:linear-gradient(180deg,transparent,#000);mask-image:linear-gradient(180deg,transparent,#000);border-bottom:1px solid var(--line)}
+.news{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:80px 58px 82px;border-bottom:1px solid var(--line)}
+.news .t{font-size:24px;line-height:30px;letter-spacing:-.01em}
+.news form{display:flex;gap:8px}
+.news input{width:250px;height:38px;border:1px solid var(--line2);border-radius:10px;padding:0 12px;font-size:13px;background:#fff;color:var(--fg);outline:none;box-shadow:0 1px 2px rgba(16,17,20,.04)}
+.news input:focus{border-color:#9fb6f2;box-shadow:0 0 0 3px rgba(47,107,240,.12)}
+.news .btn{height:38px}
+.gapline{height:126px}
+
+/* ---------- final CTA + footer ---------- */
+.final{position:relative;text-align:center;padding:126px 24px 120px;overflow:hidden}
+.final .bg{position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 8px);-webkit-mask-image:radial-gradient(ellipse 60% 80% at 50% 50%,transparent 30%,#000);mask-image:radial-gradient(ellipse 60% 80% at 50% 50%,transparent 30%,#000)}
+.final h2{position:relative;font-size:56px;line-height:56px;letter-spacing:-.015em;font-weight:500;max-width:680px;margin:0 auto}
+.final .ctas{position:relative;margin-top:30px;display:flex;justify-content:center;gap:8px}
+footer{border-top:1px solid var(--dline)}
+footer .top{display:grid;grid-template-columns:1fr 928px;padding:80px 60px 120px;max-width:1512px;margin:0 auto}
+footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:0 0}
+footer h4{font-size:14px;line-height:20px;color:#6e7076;font-weight:500;padding:4px 0}
+footer .cols a{display:flex;align-items:center;gap:6px;font-size:14px;line-height:20px;padding:4px 0;color:#d4d4d6}
+footer .cols a:hover{color:#fff}
+footer .cols .grp+.grp{margin-top:36px}
+footer .new{font-size:10px;line-height:14px;padding:0 5px;border-radius:5px;background:#2f5be0;color:#fff}
+footer .ne{width:9px;height:9px;opacity:.6}
+footer .bot{display:flex;align-items:center;justify-content:space-between;padding:0 60px 40px;max-width:1512px;margin:0 auto;font-size:12px;color:#6e7076}
+footer .soc{display:flex;gap:14px}
+footer .soc svg{width:14px;height:14px;color:#8a8c91}
+footer .legal{display:flex;gap:28px}
+footer .legal a:hover{color:#d4d4d6}
+footer .logo{color:#fafafa}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.marq .track{animation:none}.ask .caret{animation:none}}
+
+/* ---------- responsive ---------- */
+@media (max-width:1180px){
+  nav.main{display:none}
+  .plat{grid-template-columns:1fr}
+  .plat .nav{display:none}
+  .term{display:none}
+  .prv{grid-template-columns:1fr}
+  .prv .chat{display:none}
+  footer .top{grid-template-columns:1fr;gap:48px}
+  .float{display:none}
+}
+@media (max-width:820px){
+  header.site .in{padding:0 16px}
+  .announce{font-size:12px;padding:0 40px;text-align:center}
+  .announce .x{right:8px}
+  header.site .right .btn:not(.primary){display:none}
+  .pad,.plat-head,.feat .intro,.selfb,.sig .l,.stories .head,.chlog .head,.news,.quote,.scale .l{padding-left:16px;padding-right:16px}
+  .hero .top{padding-top:64px}
+  .hero h1{font-size:40px;line-height:42px}
+  .hero p.sub{font-size:16px;line-height:22px}
+  .hero .stage{margin-top:56px;padding:0 16px 64px}
+  .app{grid-template-columns:1fr;height:auto}
+  .app .side{display:none}
+  .h2{font-size:28px;line-height:32px}
+  .h3{font-size:20px;line-height:24px}
+  .logos .grid{grid-template-columns:repeat(2,1fr)}
+  .logos .cell{border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}
+  .logos .cell:nth-child(2n){border-right:0!important}
+  .shot{padding:24px 16px}
+  .pair{grid-template-columns:1fr}
+  .pair>div+div{border-left:0;border-top:1px solid var(--line)}
+  .pair>div{min-height:0}
+  .tbl .hide{display:none}
+  .tbl{overflow-x:auto}
+  .tb .r{display:none}
+  .plat{grid-template-columns:minmax(0,1fr)}
+  .flow{height:auto;display:flex;flex-direction:column;gap:12px}
+  .flow .node{position:relative;left:auto!important;top:auto!important;width:100%}
+  .flow svg.wires,.flow .tf{display:none}
+  .kan{overflow-x:auto}
+  .col{min-width:180px}
+  .charts{grid-template-columns:1fr}
+  .rec{grid-template-columns:1fr}
+  .rec .lp{border-right:0;border-bottom:1px solid var(--line)}
+  .rec .hg{grid-template-columns:1fr}
+  .rec .hc.w2{grid-column:auto}
+  .uc{padding-top:96px}
+  .uc .big{font-size:48px;line-height:50px}
+  .arc{height:200px}
+  .ucgrid{grid-template-columns:1fr}
+  .ucgrid>div{min-height:0;border-right:0;border-bottom:1px solid var(--dline);gap:24px}
+  .sig{grid-template-columns:1fr}
+  .sig .l{border-right:0;padding-top:64px}
+  .sig .r{min-height:360px}
+  .acc{padding-top:48px}
+  .conn{padding-top:96px}
+  .tile{width:72px;height:72px;border-radius:18px}
+  .sdk{padding:16px}
+  .sdk .box{grid-template-columns:1fr}
+  .sdk .box .l{padding:40px 20px;border-right:0}
+  .sdk .box .r{min-height:260px;border-top:1px solid var(--dline)}
+  .quote{padding-top:120px;padding-bottom:120px}
+  .quote blockquote{font-size:30px;line-height:36px}
+  .scale{grid-template-columns:1fr;min-height:0}
+  .scale .l{padding-top:96px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stories .head,.chlog .head{padding-top:96px;padding-bottom:56px}
+  .stabs{grid-template-columns:repeat(2,1fr)}
+  .stabs button{border-bottom:1px solid var(--line)}
+  .feature,.fpane.on{grid-template-columns:1fr}
+  .feature .l{border-right:0;padding:32px 16px}
+  .feature .r{min-height:320px}
+  .cl{grid-template-columns:1fr 1fr;padding:0 16px;row-gap:24px}
+  .cl a{min-height:150px;padding:0 14px}
+  .news{flex-direction:column;align-items:flex-start}
+  .news form{width:100%}
+  .news input{flex:1;width:auto}
+  .final h2{font-size:36px;line-height:38px}
+  footer .top{padding:56px 16px 64px}
+  footer .cols{grid-template-columns:1fr 1fr;row-gap:36px}
+  footer .bot{flex-direction:column;gap:16px;align-items:flex-start;padding:0 16px 32px}
+  footer .legal{flex-wrap:wrap;gap:12px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- reusable icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-arrow" viewBox="0 0 12 12"><path d="M2 6h8M6.5 2.5 10 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-ne" viewBox="0 0 12 12"><path d="M3.5 8.5l5-5M4.5 3.5h4v4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chevr" viewBox="0 0 12 12"><path d="M4.5 3 7.5 6 4.5 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-x" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3 3 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-branch" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="4.5" cy="3.5" r="1.6"/><circle cx="4.5" cy="12.5" r="1.6"/><circle cx="11.5" cy="5.5" r="1.6"/><path d="M4.5 5.1v5.8M11.5 7.1c0 2.6-2.2 3.4-7 3.8"/></g></symbol>
+    <symbol id="i-pr" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3.5" r="1.6"/><circle cx="4" cy="12.5" r="1.6"/><circle cx="12" cy="12.5" r="1.6"/><path d="M4 5.1v5.8M12 10.9V6.5a2 2 0 0 0-2-2H7.5M9 3 7.5 4.5 9 6"/></g></symbol>
+    <symbol id="i-merge" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3.5" r="1.6"/><circle cx="4" cy="12.5" r="1.6"/><circle cx="12" cy="9" r="1.6"/><path d="M4 5.1v5.8M4 5.5c0 2.5 2.5 3.5 6.4 3.5"/></g></symbol>
+    <symbol id="i-home" viewBox="0 0 16 16"><path d="M2.5 7 8 2.5 13.5 7v6a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 0 1 8 0v4l1 1.5H3zM6.5 14h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-box" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 8.2 7.2 9.8 10.5 6.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-db" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4"><ellipse cx="8" cy="4" rx="5" ry="1.8"/><path d="M3 4v8c0 1 2.2 1.8 5 1.8s5-.8 5-1.8V4M3 8c0 1 2.2 1.8 5 1.8S13 9 13 8"/></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></g></symbol>
+    <symbol id="i-bot" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="10" height="8" rx="2.5"/><path d="M8 2.5V5M6 9h.01M10 9h.01"/></g></symbol>
+    <symbol id="i-mail" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="2.5" y="3.5" width="11" height="9" rx="1.8"/><path d="m3 4.5 5 4 5-4"/></g></symbol>
+    <symbol id="i-globe" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="5.5"/><path d="M2.5 8h11M8 2.5c1.6 1.6 2.3 3.4 2.3 5.5S9.6 11.9 8 13.5C6.4 11.9 5.7 10.1 5.7 8S6.4 4.1 8 2.5"/></g></symbol>
+    <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 2 13 4v4c0 3-2.2 5-5 6-2.8-1-5-3-5-6V4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.5c.8-2.3 2.8-3.5 5-3.5s4.2 1.2 5 3.5"/></g></symbol>
+    <symbol id="i-bld" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="3" y="2.5" width="7" height="11" rx="1"/><path d="M10 6.5h2.5a.5.5 0 0 1 .5.5v6.5H10M5.5 5.5h2M5.5 8h2M5.5 10.5h2"/></g></symbol>
+    <symbol id="i-pin" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 14s4.5-4 4.5-7.5a4.5 4.5 0 0 0-9 0C3.5 10 8 14 8 14z"/><circle cx="8" cy="6.5" r="1.5"/></g></symbol>
+    <symbol id="i-cal" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="2.5" y="3.5" width="11" height="10" rx="1.8"/><path d="M2.5 7h11M5.5 2v3M10.5 2v3"/></g></symbol>
+    <symbol id="i-dollar" viewBox="0 0 16 16"><path d="M8 2v12M11 4.5H6.8a2 2 0 0 0 0 4h2.4a2 2 0 0 1 0 4H5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4zM9 2.5v3h3M6 9h4M6 11h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 16 16"><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h7A1.5 1.5 0 0 1 13 4.5v5a1.5 1.5 0 0 1-1.5 1.5H7l-3 2.5V11h.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.5 14 13H2zM8 6.5v3M8 11.3v.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 16 16"><path d="M5.5 4 2.5 7l3 3M3 7h6.5a4 4 0 0 1 0 8H7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 16 16"><path d="M9 1.5 3.5 9H8l-1 5.5L12.5 7H8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-if" viewBox="0 0 16 16"><path d="M4 2.5v4a3 3 0 0 0 3 3h5M10 7.5 12 9.5 10 11.5M4 9v4.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-send" viewBox="0 0 12 12"><path d="M6 10V2M2.5 5.5 6 2l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-term" viewBox="0 0 16 16"><path d="M3.5 5 6.5 8l-3 3M8.5 11.5h4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2 14 5.2 8 8.4 2 5.2zM2 8l6 3.2L14 8M2 10.8l6 3.2 6-3.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4"><path d="M1.8 8S4 3.5 8 3.5 14.2 8 14.2 8 12 12.5 8 12.5 1.8 8 1.8 8z"/><circle cx="8" cy="8" r="2"/></g></symbol>
+    <symbol id="i-star" viewBox="0 0 16 16"><path d="M8 2.2l1.7 3.6 3.9.5-2.9 2.7.8 3.9L8 11l-3.5 1.9.8-3.9-2.9-2.7 3.9-.5z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 16 16"><g fill="currentColor"><circle cx="3.5" cy="8" r="1.2"/><circle cx="8" cy="8" r="1.2"/><circle cx="12.5" cy="8" r="1.2"/></g></symbol>
+    <symbol id="i-search" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></g></symbol>
+    <symbol id="i-logo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 3v18"/><path d="M5 9c0 4 4 4.5 9 4.5h3"/><circle cx="19" cy="13.5" r="2.3" fill="currentColor" stroke="none"/></g></symbol>
+  </defs>
+</svg>
+
+<!-- ======================= HEADER ======================= -->
+<div class="announce" id="announce">
+  <a href="#platform">Mainline is live for Night Hack. See how agents open PRs <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+  <button class="x" aria-label="Dismiss" onclick="document.getElementById('announce').remove()"><svg width="12" height="12"><use href="#i-x"/></svg></button>
+</div>
+<header class="site" id="hdr">
+  <div class="in">
+    <a href="#" class="logo" aria-label="Mainline home"><svg><use href="#i-logo"/></svg>mainline</a>
+    <nav class="main" aria-label="Primary">
+      <button>Platform <svg class="chev"><use href="#i-chev"/></svg></button>
+      <button>Resources <svg class="chev"><use href="#i-chev"/></svg></button>
+      <a href="#developers">Developers</a>
+      <a href="#stories">Customers</a>
+      <a href="#changelog">Pricing</a>
+    </nav>
+    <div class="right">
+      <a class="btn" href="/">Sign in</a>
+      <a class="btn primary" href="/prs">Start for free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ======================= HERO ======================= -->
+<section class="hero">
+  <div class="glow"></div>
+  <div class="top">
+    <a class="pill" href="#stories">Built at Night Hack by Founders, Inc. <svg><use href="#i-chevr"/></svg></a>
+    <h1>Pull requests for your CRM.</h1>
+    <p class="sub">Mainline puts every agent on its own branch. Changes arrive as reviewable PRs, never silent writes.</p>
+    <div class="ctas">
+      <a class="btn" href="/demo">Watch the demo</a>
+      <a class="btn primary" href="/prs">Start for free</a>
+    </div>
+  </div>
+
+  <div class="stage rv">
+    <div class="win">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="app">
+        <aside class="side">
+          <div class="ws"><span class="mark">M</span>Northstar Inc. <svg width="10" height="10" style="opacity:.5"><use href="#i-chev"/></svg></div>
+          <div class="qa"><div class="box"><svg width="12" height="12"><use href="#i-bolt"/></svg>Quick actions<span class="kbd">⌘K</span></div><div class="ib"><svg width="13" height="13"><use href="#i-search"/></svg></div></div>
+          <div class="si"><svg><use href="#i-home"/></svg>Overview</div>
+          <div class="si"><svg><use href="#i-bell"/></svg>Notifications<span class="n">4</span></div>
+          <div class="si on"><svg><use href="#i-pr"/></svg>Pull requests<span class="n">12</span></div>
+          <div class="si"><svg><use href="#i-db"/></svg>CRM (main)</div>
+          <div class="si"><svg><use href="#i-clock"/></svg>Time travel</div>
+          <div class="lbl">Agents</div>
+          <div class="si"><svg><use href="#i-mail"/></svg>Inbox agent<span class="n">5</span></div>
+          <div class="si"><svg><use href="#i-check"/></svg>Hygiene agent<span class="n">3</span></div>
+          <div class="si"><svg><use href="#i-layers"/></svg>Schema agent<span class="n">1</span></div>
+          <div class="si"><svg><use href="#i-globe"/></svg>Web watcher<span class="n">3</span></div>
+          <div class="lbl">Policy</div>
+          <div class="si"><svg><use href="#i-shield"/></svg>Branch protection</div>
+          <div class="si"><svg><use href="#i-star"/></svg>Agent trust</div>
+        </aside>
+        <div class="mainc">
+          <div class="tb">
+            <div class="crumb"><svg width="14" height="14" style="color:#6b6f77"><use href="#i-pr"/></svg>Pull requests <span class="gray">/</span> <b>#41 Acme expansion</b> <svg width="13" height="13" style="color:#9a9ea6"><use href="#i-star"/></svg></div>
+            <div class="r">
+              <div class="avs"><span class="av" style="background:#7c5cf5">IN</span><span class="av" style="background:#2fae67">HY</span><span class="av" style="background:#e9a23b">WW</span></div>
+              <span class="gray" style="font-size:12px">Share</span>
+              <span class="chip"><svg width="11" height="11"><use href="#i-chat"/></svg> Ask Mainline</span>
+            </div>
+          </div>
+          <div class="prv">
+            <div class="l">
+              <div class="ttl">Acme: move to Negotiation, raise to $45k <span class="chip a">Needs review</span></div>
+              <div class="meta"><span class="chip v"><svg width="10" height="10"><use href="#i-branch"/></svg> agent/inbox-7</span><span>→</span><span class="chip"><svg width="10" height="10"><use href="#i-branch"/></svg> main</span><span>opened 4 min ago by Inbox agent</span></div>
+              <div class="tabs-s"><span class="on">Changes 3</span><span>Evidence 2</span><span>Policy 2</span><span>Staleness</span></div>
+              <div class="diff">
+                <div class="h"><svg width="13" height="13" style="color:#6b6f77"><use href="#i-dollar"/></svg><b>deal / Acme expansion</b><span class="chip r" style="margin-left:auto">+$25,000</span></div>
+                <div class="row"><div class="k">stage</div><div class="old">Proposal</div><div class="new">Negotiation</div></div>
+                <div class="row"><div class="k">amount</div><div class="old">$20,000</div><div class="new">$45,000</div></div>
+                <div class="row"><div class="k">nextStep</div><div class="old">Send pricing</div><div class="new">Legal review w/ Priya</div></div>
+              </div>
+              <div class="ev">
+                <div class="e"><svg><use href="#i-mail"/></svg>Email from Priya Sharma: "ready to expand to 3 teams"<span class="t">2h ago</span></div>
+                <div class="e"><svg><use href="#i-shield"/></svg>Policy: amount change exceeds $10k threshold<span class="t">rule 7</span></div>
+              </div>
+            </div>
+            <div class="chat">
+              <div class="bub">Can I merge the Acme PR?</div>
+              <div class="ans">
+                <div class="tool"><svg width="11" height="11"><use href="#i-search"/></svg>2 tools used</div>
+                <b>Hold for review.</b> Two rules require a human:
+                <ul>
+                  <li>Stage change on an open deal</li>
+                  <li>$20,000 → $45,000 (+$25,000) exceeds the $10k threshold</li>
+                </ul>
+                <div style="margin-top:8px">Evidence is fresh as of 2h ago. No conflicts with main.</div>
+              </div>
+              <div class="inp">Ask anything…<span class="m">Auto</span><span class="send"><svg><use href="#i-send"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="c4">$</span> npx tsx scripts/run-fleet.ts
+<span class="c1">▸ inbox</span>     opened PR #41 <span class="c4">(3 changes)</span>
+<span class="c1">▸ webwatch</span>  opened PR #42 <span class="c4">(headcount)</span>
+<span class="c2">✓ auto-merged</span> #42 <span class="c4">trusted · low risk</span>
+<span class="c1">▸ hygiene</span>   opened PR #43 <span class="c4">(merge dup)</span>
+<span class="c3">⚑ held</span> #41 <span class="c4">stage + $25k delta</span>
+<span class="c1">▸ schema</span>    opened PR #44
+<span class="c4">  + deal.procurementContact</span>
+<span class="c4">  backfill 4 deals</span>
+
+<span class="c2">12 PRs</span> · <span class="c2">3 merged</span> · <span class="c3">9 waiting</span>
+<span class="c4">main @ e7f19c2</span>
+<span class="c4">$</span> <span style="background:#c8c8c8;color:#111"> </span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= LOGO STRIP ======================= -->
+<section class="logos">
+  <div class="frame">
+    <div class="grid">
+      <a class="cell" href="#"><span class="wm">HubSpot</span><svg class="ne"><use href="#i-ne"/></svg></a>
+      <a class="cell" href="#"><span class="wm m">salesforce</span></a>
+      <a class="cell" href="#"><span class="wm"><svg class="g"><use href="#i-merge"/></svg>Pipedrive</span></a>
+      <a class="cell" href="#"><span class="wm s">Attio</span><svg class="ne"><use href="#i-ne"/></svg></a>
+      <a class="cell" href="#"><span class="wm c">Claude</span></a>
+      <a class="cell" href="#"><span class="wm"><svg class="g"><use href="#i-bolt"/></svg>Firecrawl</span><svg class="ne"><use href="#i-ne"/></svg></a>
+      <a class="cell" href="#"><span class="wm"><svg class="g"><use href="#i-globe"/></svg>Photon</span></a>
+      <a class="cell" href="#"><span class="wm"><svg class="g"><use href="#i-layers"/></svg>Railway</span><svg class="ne"><use href="#i-ne"/></svg></a>
+      <a class="cell" href="#"><span class="wm m">next.js</span></a>
+      <a class="cell" href="https://github.com/Welddevelopment/git_crm"><span class="wm s">GitHub</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PLATFORM ======================= -->
+<section class="sec2" id="platform">
+  <div class="frame">
+    <div class="plat-head rv">
+      <span class="badge">Platform</span>
+      <h2 class="h2">The review layer your agents never skip. <span class="gray">Branches for every agent. Three-way merges into main. Nothing lands without a diff.</span></h2>
+    </div>
+    <div class="plat">
+      <div class="nav">
+        <div class="stick" id="platnav">
+          <a href="#f-branch" class="on">Branch and propose</a>
+          <a href="#f-govern">Govern merges</a>
+          <a href="#f-merge">Merge and resolve</a>
+          <a href="#f-stale">Catch stale decisions</a>
+          <a href="#f-revert">Revert and rewind</a>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- 1. Branch -->
+        <div class="feat" id="f-branch" data-nav="0">
+          <div class="intro rv"><h3 class="h3">Every agent, its own branch. <span class="gray">Inbox, hygiene, schema and web agents work in parallel and open PRs instead of writing to main.</span></h3></div>
+          <div class="shot">
+            <div class="card tbl rv">
+              <div class="tbh"><span class="chip b"><svg width="10" height="10"><use href="#i-pr"/></svg></span><b style="font-size:13px">Open pull requests</b><span class="gray" style="margin-left:auto;display:flex;align-items:center;gap:8px"><span class="avs"><span class="av" style="background:#7c5cf5">IN</span><span class="av" style="background:#2fae67">HY</span><span class="av" style="background:#3a5bd9">SC</span></span>+1 · Share</span></div>
+              <div class="tbh2"><span class="chip">All agents <svg width="9" height="9"><use href="#i-chev"/></svg></span><span class="chip">View settings <svg width="9" height="9"><use href="#i-chev"/></svg></span></div>
+              <table>
+                <thead><tr><th><span class="ck"></span></th><th>Pull request</th><th>Risk</th><th>Agent</th><th class="hide">Branch</th><th class="hide">Evidence</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="ck"></span></td><td><u>Acme expansion</u></td><td><span class="score" style="background:var(--amber-bg);color:#a8670f">72</span></td><td><span class="av" style="background:#7c5cf5;display:inline-grid;vertical-align:middle;margin-right:6px">IN</span>Inbox agent</td><td class="hide mono">agent/inbox-7</td><td class="hide">Email from Priya Sharma, 2h ago</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Northwind headcount</u></td><td><span class="score">18</span></td><td><span class="av" style="background:#e9a23b;display:inline-grid;vertical-align:middle;margin-right:6px">WW</span>Web watcher</td><td class="hide mono">agent/webwatch-3</td><td class="hide">Careers page, 1h ago</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Merge Priya S. → Priya Sharma</u></td><td><span class="score" style="background:var(--amber-bg);color:#a8670f">64</span></td><td><span class="av" style="background:#2fae67;display:inline-grid;vertical-align:middle;margin-right:6px">HY</span>Hygiene agent</td><td class="hide mono">agent/hygiene-2</td><td class="hide">Same email, same company</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Add deal.procurementContact</u></td><td><span class="score" style="background:var(--red-bg);color:#c0343a">81</span></td><td><span class="av" style="background:#3a5bd9;display:inline-grid;vertical-align:middle;margin-right:6px">SC</span>Schema agent</td><td class="hide mono">agent/schema-1</td><td class="hide">4 deals mention procurement</td></tr>
+                  <tr><td><span class="ck" style="background:var(--accent);border-color:var(--accent)"></span></td><td><u>Lumen Grid signals</u></td><td><span class="score">12</span></td><td><span class="av" style="background:#e9a23b;display:inline-grid;vertical-align:middle;margin-right:6px">WW</span>Web watcher</td><td class="hide mono">agent/webwatch-4</td><td class="hide">Press release, today</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Kestrel Bank next step</u></td><td><span class="score">22</span></td><td><span class="av" style="background:#7c5cf5;display:inline-grid;vertical-align:middle;margin-right:6px">IN</span>Inbox agent</td><td class="hide mono">agent/inbox-8</td><td class="hide">Thread with Alex Chen</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Fix Alex Chen title</u></td><td><span class="score">9</span></td><td><span class="av" style="background:#2fae67;display:inline-grid;vertical-align:middle;margin-right:6px">HY</span>Hygiene agent</td><td class="hide mono">agent/hygiene-3</td><td class="hide">Email signature</td></tr>
+                  <tr><td><span class="ck"></span></td><td><u>Orbital close date</u></td><td><span class="score">31</span></td><td><span class="av" style="background:#7c5cf5;display:inline-grid;vertical-align:middle;margin-right:6px">IN</span>Inbox agent</td><td class="hide mono">agent/inbox-9</td><td class="hide">Calendar invite moved</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card float rv">
+              <div class="fh">Review request</div>
+              <div class="ft">Approve Acme expansion</div>
+              <div class="fd">Stage change and a $25k delta. Policy holds this for a human.</div>
+              <div class="fr"><span class="gray">To</span><span class="av" style="background:#d9739a">JJ</span>Joel <span class="gray" style="margin-left:auto">Slack · iMessage</span></div>
+              <div class="body">
+                <b>#41 · Acme expansion</b><br><br>
+                stage: Proposal → Negotiation<br>
+                amount: $20,000 → $45,000<br><br>
+                Evidence: email from Priya Sharma, 2h ago. No conflicts with main.
+              </div>
+              <div class="act"><span class="bb">Merge</span><span class="gray">Close</span><span class="gray" style="margin-left:auto">Open PR</span></div>
+            </div>
+          </div>
+          <div class="pair">
+            <div class="rv">
+              <div class="t">No more silent writes.</div>
+              <div class="d">In chaos mode, 22 direct writes moved the forecast $25k. Mainline turns each one into a diff.</div>
+              <div class="viz"><div class="ask">Propose: set Acme stage<span class="caret"></span><span class="send"><svg><use href="#i-send"/></svg></span></div></div>
+            </div>
+            <div class="rv">
+              <div class="t">Trust is earned.</div>
+              <div class="d">Agents start on probation, graduate to trusted, then autonomous, and drop back after a revert.</div>
+              <div class="viz">
+                <div class="rings">
+                  <span class="ring" style="width:300px;height:300px"></span>
+                  <span class="ring" style="width:210px;height:210px"></span>
+                  <span class="ring" style="width:130px;height:130px"></span>
+                  <div class="core"><svg><use href="#i-bot"/></svg></div>
+                  <span class="chip g" style="left:28px;top:96px">Trusted</span>
+                  <span class="chip a" style="right:18px;top:52px">Probation</span>
+                  <span class="chip b" style="left:6px;bottom:44px">3 clean merges</span>
+                  <span class="chip v" style="right:6px;bottom:24px">Autonomous</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Govern -->
+        <div class="feat" id="f-govern" data-nav="1">
+          <div class="intro rv"><h3 class="h3">Policy, not vibes. <span class="gray">Twenty branch-protection rules decide what auto-merges and what waits for a human.</span></h3></div>
+          <div class="shot" style="padding:64px 40px">
+            <div class="flow rv">
+              <svg class="wires" viewBox="0 0 880 470" preserveAspectRatio="none" fill="none" stroke="#c9ccd2" stroke-width="1.2">
+                <path d="M228 50H340"/>
+                <path d="M554 50H600V100H90V200H130"/>
+                <path d="M344 200H380"/>
+                <path d="M594 222H620Q640 222 640 202V150H660"/>
+                <path d="M594 236H620Q640 236 640 256V340H660"/>
+                <circle cx="228" cy="50" r="3" fill="#fff"/><circle cx="340" cy="50" r="3" fill="#fff"/><circle cx="344" cy="200" r="3" fill="#fff"/><circle cx="380" cy="200" r="3" fill="#fff"/><circle cx="660" cy="150" r="3" fill="#fff"/><circle cx="660" cy="340" r="3" fill="#fff"/>
+              </svg>
+              <div class="node sel" style="left:14px;top:24px"><div class="nt"><span class="ni" style="background:#eef3fe;color:var(--accent)"><svg><use href="#i-pr"/></svg></span>PR opened</div><div class="nd">Agent proposes changes</div></div>
+              <div class="node" style="left:340px;top:24px"><span class="done"><svg width="10" height="10"><use href="#i-check"/></svg>Passed</span><div class="nt"><span class="ni" style="background:#efeafe;color:var(--violet)"><svg><use href="#i-search"/></svg></span>Staleness check</div><div class="nd">Is the evidence still true?</div></div>
+              <div class="node" style="left:130px;top:174px"><div class="nt"><span class="ni" style="background:var(--green-bg);color:#137a3f"><svg><use href="#i-shield"/></svg></span>Policy</div><div class="nd">Evaluate 20 rules + trust</div></div>
+              <div class="node" style="left:380px;top:174px;height:86px"><div class="nt"><span class="ni" style="background:#efeafe;color:var(--violet)"><svg><use href="#i-if"/></svg></span>If</div><div class="nd" style="padding-right:36px">Money, stage, identity or schema?</div></div>
+              <span class="tf" style="left:568px;top:213px">True</span><span class="tf" style="left:566px;top:234px">False</span>
+              <div class="node" style="left:660px;top:124px"><div class="nt"><span class="ni" style="background:var(--amber-bg);color:#a8670f"><svg><use href="#i-user"/></svg></span>Request review</div><div class="nd">Text the owner a diff</div></div>
+              <div class="node" style="left:660px;top:314px"><div class="nt"><span class="ni" style="background:var(--green-bg);color:#137a3f"><svg><use href="#i-merge"/></svg></span>Auto-merge</div><div class="nd">Fast-forward into main</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Merge -->
+        <div class="feat" id="f-merge" data-nav="2">
+          <div class="intro rv"><h3 class="h3">Merge like code. <span class="gray">Three-way merges across a team of agents, with conflicts surfaced field by field.</span></h3></div>
+          <div class="shot">
+            <div class="kan rv">
+              <div class="col"><div class="ch"><span class="chip b" style="width:8px;height:8px;padding:0;border-radius:50%;background:#3a5bd9"></span>Open <span class="cnt">4</span></div>
+                <div class="kc"><div class="kt">Orbital close date</div><div class="kr"><svg><use href="#i-cal"/></svg>Nov 14, 2026</div><div class="kr"><svg><use href="#i-dollar"/></svg>USD $38,000</div><div class="kr"><span class="av" style="background:#7c5cf5;width:16px;height:16px;font-size:7px">IN</span>Inbox agent</div><div class="kf"><svg width="11" height="11"><use href="#i-doc"/></svg><svg width="11" height="11"><use href="#i-box"/></svg><span class="d">2m</span></div></div>
+                <div class="kc"><div class="kt">Kestrel next step</div><div class="kr"><svg><use href="#i-cal"/></svg>Nov 3, 2026</div><div class="kr"><svg><use href="#i-dollar"/></svg>USD $72,500</div><div class="kr"><span class="av" style="background:#7c5cf5;width:16px;height:16px;font-size:7px">IN</span>Inbox agent</div><div class="kf"><svg width="11" height="11"><use href="#i-doc"/></svg><span class="d">9m</span></div></div>
+              </div>
+              <div class="col"><div class="ch"><span class="chip" style="width:8px;height:8px;padding:0;border-radius:50%;background:var(--amber)"></span>Needs review <span class="cnt">2</span></div>
+                <div class="kc"><div class="kt">Acme expansion</div><div class="kr"><svg><use href="#i-cal"/></svg>Dec 1, 2026</div><div class="kr"><svg><use href="#i-dollar"/></svg>USD $45,000</div><div class="kr"><span class="av" style="background:#7c5cf5;width:16px;height:16px;font-size:7px">IN</span>Inbox agent</div><div class="kf"><svg width="11" height="11"><use href="#i-shield"/></svg><span>2 rules</span><span class="d">4m</span></div></div>
+                <div class="kc"><div class="kt">Add procurementContact</div><div class="kr"><svg><use href="#i-layers"/></svg>Schema · 4 backfills</div><div class="kr"><span class="av" style="background:#3a5bd9;width:16px;height:16px;font-size:7px">SC</span>Schema agent</div><div class="kf"><svg width="11" height="11"><use href="#i-shield"/></svg><span>schema</span><span class="d">12m</span></div></div>
+              </div>
+              <div class="col"><div class="ch"><span class="chip" style="width:8px;height:8px;padding:0;border-radius:50%;background:var(--red)"></span>Conflict <span class="cnt">1</span></div>
+                <div class="kc"><div class="kt">Northwind headcount</div><div class="kr"><svg><use href="#i-user"/></svg>220 vs 250</div><div class="kr"><svg><use href="#i-dollar"/></svg>USD $120,000</div><div class="kr"><span class="av" style="background:#e9a23b;width:16px;height:16px;font-size:7px">WW</span>Web watcher</div><div class="kf"><svg width="11" height="11"><use href="#i-warn"/></svg><span>1 field</span><span class="d">6m</span></div></div>
+              </div>
+              <div class="col"><div class="ch"><span class="chip" style="width:8px;height:8px;padding:0;border-radius:50%;background:var(--green)"></span>Merged <span class="cnt">6</span></div>
+                <div class="kc"><div class="kt">Lumen Grid signals</div><div class="kr"><svg><use href="#i-globe"/></svg>Auto-merged</div><div class="kr"><span class="av" style="background:#e9a23b;width:16px;height:16px;font-size:7px">WW</span>Web watcher</div><div class="kf"><svg width="11" height="11"><use href="#i-merge"/></svg><span class="d">18m</span></div></div>
+                <div class="kc"><div class="kt">Merge Priya S.</div><div class="kr"><svg><use href="#i-user"/></svg>→ Priya Sharma</div><div class="kr"><span class="av" style="background:#2fae67;width:16px;height:16px;font-size:7px">HY</span>Hygiene agent</div><div class="kf"><svg width="11" height="11"><use href="#i-merge"/></svg><span class="d">21m</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="pair">
+            <div class="rv">
+              <div class="t">Conflicts, caught.</div>
+              <div class="d">Two agents disagree on Northwind's headcount? Pick a side and merge.</div>
+              <div class="viz">
+                <div class="card ccard">
+                  <div class="r"><span class="av" style="background:#e9a23b">NW</span><b>Northwind</b></div>
+                  <div class="r"><svg><use href="#i-bld"/></svg><span class="k">Industry</span>Logistics</div>
+                  <div class="r"><svg><use href="#i-pin"/></svg><span class="k">HQ</span>Chicago, Illinois</div>
+                  <div class="r"><svg><use href="#i-user"/></svg><span class="k">Headcount</span><span class="chip r">conflict</span></div>
+                  <div class="cf">
+                    <div class="o sel"><span class="rd"></span>main · web watcher<span class="v">220</span></div>
+                    <div class="o"><span class="rd"></span>agent/inbox-4<span class="v">250</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rv">
+              <div class="t">Semantic rebase.</div>
+              <div class="d">Edits to a merged-away duplicate rebase onto the survivor, automatically.</div>
+              <div class="viz">
+                <div class="card think">
+                  <div class="th">Rebasing <svg width="10" height="10"><use href="#i-chevr"/></svg></div>
+                  <div><b>Priya S.</b> was merged into <b>Priya Sharma</b> on main.</div>
+                  <div class="reb"><svg><use href="#i-branch"/></svg>#41 edits contact priya-s <span class="chip" style="margin-left:auto">merged-away</span></div>
+                  <div class="reb"><svg><use href="#i-merge"/></svg>Retargeted to priya-sharma <span class="chip g" style="margin-left:auto">resolved</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Stale -->
+        <div class="feat" id="f-stale" data-nav="3">
+          <div class="intro rv"><h3 class="h3">Evidence goes stale. We notice. <span class="gray">When new facts contradict a PR's evidence, Mainline flags it before anyone hits merge.</span></h3></div>
+          <div class="shot" style="padding:48px 40px 64px">
+            <div class="cpanel rv">
+              <div class="q"><span>Is the Acme expansion PR still safe to merge?</span></div>
+              <div class="card resp">
+                <div class="tools">2 tools used <svg width="10" height="10"><use href="#i-chev"/></svg></div>
+                Checking PR #41's evidence against everything that landed since it was opened.
+<pre><span class="kw">checkStaleness</span>(pr<span class="c">#41</span>, since=<span class="s">"2026-10-30T17:12"</span>)
+<span class="c">→ 1 new document mentions Acme</span>
+<span class="kw">llmJudge</span>(evidence, newDocs)  <span class="c">→ contradicts: true</span></pre>
+                <div class="stale"><svg><use href="#i-warn"/></svg><div><b>Stale.</b> An email received 6 minutes ago says Acme is pausing new vendor spend this quarter. The PR's evidence ("ready to expand to 3 teams") predates it. Re-run the inbox agent before merging.</div></div>
+              </div>
+              <div class="bar">Ask anything…<span class="send" style="margin-left:auto;width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center"><svg width="10" height="10" style="color:#fff"><use href="#i-send"/></svg></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Revert -->
+        <div class="feat" id="f-revert" data-nav="4">
+          <div class="intro rv"><h3 class="h3">Undo anything. <span class="gray">Revert a bad merge in one click, blame any field, and scrub main back through time.</span></h3></div>
+          <div class="shot">
+            <div class="charts rv">
+              <div class="card chart">
+                <div class="ch">PRs by outcome <svg width="12" height="12" style="color:#9a9ea6"><use href="#i-clock"/></svg><svg class="dots3" width="14" height="14"><use href="#i-dots"/></svg></div>
+                <div class="legend"><span><i style="background:#2f6bf0"></i>Auto-merged</span><span><i style="background:#e9a23b"></i>Human-merged</span><span><i style="background:#e5484d"></i>Reverted</span></div>
+                <div class="bars">
+                  <div class="gl" style="bottom:0"><span>0</span></div><div class="gl" style="bottom:25%"><span>5</span></div><div class="gl" style="bottom:50%"><span>10</span></div><div class="gl" style="bottom:75%"><span>15</span></div><div class="gl" style="bottom:100%"><span>20</span></div>
+                  <div class="b"><i style="height:44px;background:#e5484d"></i><i style="height:26px;background:#e9a23b"></i><i style="height:60px;background:#2f6bf0"></i></div>
+                  <div class="b"><i style="height:30px;background:#e5484d"></i><i style="height:34px;background:#e9a23b"></i><i style="height:76px;background:#2f6bf0"></i></div>
+                  <div class="b"><i style="height:18px;background:#e5484d"></i><i style="height:26px;background:#e9a23b"></i><i style="height:84px;background:#2f6bf0"></i></div>
+                  <div class="b"><i style="height:8px;background:#e5484d"></i><i style="height:12px;background:#e9a23b"></i><i style="height:110px;background:#2f6bf0"></i></div>
+                  <div class="b"><i style="height:6px;background:#e5484d"></i><i style="height:10px;background:#e9a23b"></i><i style="height:128px;background:#2f6bf0"></i></div>
+                </div>
+                <div class="xl"><span>17:00</span><span>17:30</span><span>18:00</span><span>18:30</span><span>19:00</span></div>
+              </div>
+              <div class="card mini">
+                <div class="ch" style="display:flex;font-weight:600">Recent reverts <svg width="14" height="14" style="margin-left:auto;color:#9a9ea6"><use href="#i-dots"/></svg></div>
+                <div class="row"><svg width="13" height="13" style="color:var(--red)"><use href="#i-undo"/></svg>Alex Chen (Lumen) → Alex Chen (Kestrel)<span class="chip r amt">reverted</span></div>
+                <div class="row"><svg width="13" height="13" style="color:var(--muted)"><use href="#i-undo"/></svg>Forecast drift, 22 writes<span class="amt">−$25k</span></div>
+                <div class="row"><svg width="13" height="13" style="color:var(--muted)"><use href="#i-undo"/></svg>Orbital owner reassignment<span class="amt">1 field</span></div>
+                <div class="row"><svg width="13" height="13" style="color:var(--muted)"><use href="#i-clock"/></svg>main @ 17:55<span class="amt gray">rewind</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="pair">
+            <div class="rv">
+              <div class="t">Blame every field.</div>
+              <div class="d">Which agent changed it, in which PR, on what evidence.</div>
+              <div class="viz">
+                <div class="card" style="width:310px;padding:12px;font-size:12px;line-height:17px">
+                  <div class="gray" style="font-size:11px">deal.amount · Acme expansion</div>
+                  <div style="margin-top:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px"><b>$45,000</b></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="av" style="background:#7c5cf5">IN</span><div>Inbox agent <span class="gray">in</span> #41<div class="gray" style="font-size:11px">merged by Joel · 18:02</div></div></div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span class="av" style="background:#9a9ea6">JJ</span><div>Seed import<div class="gray" style="font-size:11px">$20,000 · 17:31</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="rv">
+              <div class="t">Rewind main.</div>
+              <div class="d">Drag the timeline to see your CRM exactly as it was at any event.</div>
+              <div class="viz">
+                <div class="card" style="width:330px;padding:14px;font-size:12px;line-height:17px">
+                  <div style="display:flex;justify-content:space-between"><span class="gray" style="font-size:11px">Time travel</span><span class="mono" style="font-size:11px">event 148 / 212</span></div>
+                  <div style="font-weight:600;font-size:14px;margin-top:6px">Forecast was $600,000</div>
+                  <div class="gray">before chaos mode, at 17:42</div>
+                  <div style="position:relative;height:24px;margin-top:14px"><div style="position:absolute;top:11px;left:0;right:0;height:2px;background:#e7e8eb;border-radius:2px"></div><div style="position:absolute;top:11px;left:0;width:68%;height:2px;background:var(--accent);border-radius:2px"></div><div style="position:absolute;top:5px;left:calc(68% - 7px);width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--accent)"></div></div>
+                  <div style="display:flex;gap:8px;margin-top:10px"><span class="bb">Restore view</span><span class="gray">Compare with now</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= SELF-BUILDING ======================= -->
+<section class="sec2" style="border-top:1px solid var(--line)">
+  <div class="frame">
+    <div class="selfb">
+      <span class="badge rv">Layer, not a new CRM</span>
+      <h2 class="h2 rv">Keep your CRM. Add a mainline. <span class="gray">It sits in front of HubSpot, Salesforce, Attio or Pipedrive, so every agent change lands as a PR you can read, merge or revert.</span></h2>
+      <a class="btn rv" href="/extension">Install the extension</a>
+      <div class="wrap rv">
+        <div class="card rec">
+          <div class="lp">
+            <div class="who"><span class="pic">PS</span><svg width="14" height="14" style="color:#9a9ea6"><use href="#i-star"/></svg></div>
+            <div class="nm">Priya Sharma</div>
+            <div class="acts"><span class="btn"><svg width="12" height="12"><use href="#i-mail"/></svg>Compose email</span><span class="btn ib"><svg width="12" height="12"><use href="#i-doc"/></svg></span><span class="btn ib"><svg width="12" height="12"><use href="#i-pr"/></svg></span><span class="btn ib"><svg width="12" height="12"><use href="#i-dots"/></svg></span></div>
+            <div class="det">
+              <div class="dh"><svg width="10" height="10"><use href="#i-chev"/></svg>Details</div>
+              <div class="r"><svg><use href="#i-user"/></svg><span class="k">Name</span>Priya Sharma</div>
+              <div class="r"><svg><use href="#i-doc"/></svg><span class="k">Title</span>VP Operations at Acme</div>
+              <div class="r"><svg><use href="#i-mail"/></svg><span class="k">Email</span><span class="lnk">priya@acme.example</span></div>
+              <div class="r"><svg><use href="#i-pin"/></svg><span class="k">Location</span>Austin, TX</div>
+              <div class="r"><svg><use href="#i-bld"/></svg><span class="k">Company</span>Acme</div>
+              <div class="r"><svg><use href="#i-merge"/></svg><span class="k">Merged from</span>Priya S.</div>
+            </div>
+          </div>
+          <div class="rp">
+            <div class="hh"><svg width="14" height="14" style="color:#6b6f77"><use href="#i-layers"/></svg>Highlights</div>
+            <div class="hg">
+              <div class="hc w2"><div class="hl"><span>Summary</span><svg width="12" height="12"><use href="#i-bolt"/></svg></div><div class="hv">Priya leads the Acme expansion. Two agents have open PRs on this record; one was rebased after her duplicate was merged.</div></div>
+              <div class="hc" style="background:#f7f9ff"><div class="hl"><span>Blame</span><svg width="12" height="12"><use href="#i-eye"/></svg></div><div class="hv" style="color:var(--accent)">title ← hygiene #38</div></div>
+              <div class="hc"><div class="hl"><span>Open PR</span><svg width="12" height="12"><use href="#i-pr"/></svg></div><div class="hv">#41 Acme expansion</div><div class="hs">Needs review · 4 min</div></div>
+              <div class="hc"><div class="hl"><span>Company</span><svg width="12" height="12"><use href="#i-bld"/></svg></div><div class="hv">Acme</div><div class="hs">Austin, TX</div></div>
+              <div class="hc"><div class="hl"><span>Agent trust</span><svg width="12" height="12"><use href="#i-shield"/></svg></div><div class="hv">Inbox agent <span class="gray">trusted</span></div><div class="prog"><i class="on"></i><i class="on"></i><i></i></div></div>
+            </div>
+            <div class="hh" style="margin-top:18px"><svg width="14" height="14" style="color:#6b6f77"><use href="#i-clock"/></svg>Activity <svg width="10" height="10" style="color:#9a9ea6"><use href="#i-chevr"/></svg></div>
+            <div class="feed">
+              <div class="r"><span class="av" style="background:#2fae67">HY</span>Hygiene agent merged <u>Priya S.</u> into this record<span class="t">22 min ago</span></div>
+              <div class="r"><span class="av" style="background:#7c5cf5">IN</span>Inbox agent opened <u>#41 Acme expansion</u><span class="t">4 min ago</span></div>
+              <div class="r"><span class="av" style="background:#d9739a">JJ</span>Joel reverted <u>#36 owner reassignment</u><span class="t">1 hour ago</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= DARK BLOCK ======================= -->
+<div class="dark" data-theme="dark" id="developers">
+  <section class="uc">
+    <div class="frame" style="border:0">
+      <div class="k rv">The only CRM layer with</div>
+      <div class="big rv">Version Control<sup>™</sup></div>
+    </div>
+    <div class="arc"><div class="stripes-l"></div><div class="halo"></div><div class="rim"></div><div class="disk"></div></div>
+  </section>
+  <div class="frame">
+    <div class="ucgrid">
+      <div><svg><use href="#i-layers"/></svg><div class="t">Every change is an event.</div><div class="d">Immutable events on a branch log. State is a fold.</div></div>
+      <div><svg><use href="#i-branch"/></svg><div class="t">A branch per agent.</div><div class="d">Agents work in parallel without stepping on main.</div></div>
+      <div><svg><use href="#i-merge"/></svg><div class="t">Three-way merge.</div><div class="d">Field, delete, merged-away and schema conflicts.</div></div>
+      <div><svg><use href="#i-db"/></svg><div class="t">Schema is data.</div><div class="d">New fields and backfills go through review too.</div></div>
+      <div><svg><use href="#i-clock"/></svg><div class="t">Time travel.</div><div class="d">Read main as it was at any event, then blame it.</div></div>
+    </div>
+
+    <div class="sig">
+      <div class="l">
+        <span class="badge" style="align-self:flex-start">Staleness</span>
+        <h2 class="h2">All of the evidence, none of the guesswork. <span class="gray">Checked before you merge.</span></h2>
+        <a class="btn" href="/demo">See more <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+        <div class="acc" id="acc">
+          <div class="it on"><div class="t">Evidence</div><div class="d">Emails, web pages and docs attach to every PR as proof.</div><div class="pb"><i></i></div></div>
+          <div class="it"><div class="t">Staleness judge</div><div class="d">Claude compares new facts against old evidence.</div><div class="pb"><i></i></div></div>
+          <div class="it"><div class="t">Policy and trust</div><div class="d">Rules plus each agent's track record decide the route.</div><div class="pb"><i></i></div></div>
+        </div>
+      </div>
+      <div class="r">
+        <svg viewBox="0 0 700 620" preserveAspectRatio="xMidYMid slice" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1" id="vortex"></svg>
+      </div>
+    </div>
+
+    <div class="conn">
+      <span class="badge">Adapters</span>
+      <h2 class="h2">Your whole stack, governed.</h2>
+      <p>HubSpot, Salesforce, Attio, Pipedrive, a built-in CRM, and anything your agents write to.</p>
+      <a class="btn" href="/extension">Explore the adapters <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+      <div class="marq"><div class="track" id="track"></div></div>
+    </div>
+
+    <div class="sdk">
+      <div class="box">
+        <div class="l">
+          <h2 class="h2">API. SSE. Extension. <span class="gray">Build agents that open PRs.</span></h2>
+          <div class="code"><span class="c">// agents propose, never write</span>
+<br><span class="k">await</span> repo.<span class="k">propose</span>({
+<br>&nbsp;&nbsp;branch: <span class="s">"agent/inbox-7"</span>,
+<br>&nbsp;&nbsp;events: [setField(<span class="s">"deal:acme"</span>, <span class="s">"stage"</span>, <span class="s">"Negotiation"</span>)],
+<br>&nbsp;&nbsp;evidence: [email]
+<br>});</div>
+          <a class="btn" href="https://github.com/Welddevelopment/git_crm">View docs <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+        </div>
+        <div class="r">
+          <svg viewBox="0 0 600 404" preserveAspectRatio="xMidYMid slice" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1">
+            <g id="graph"></g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= TESTIMONIAL ======================= -->
+<section class="dots" style="border-bottom:1px solid var(--line)">
+  <div class="frame">
+    <div class="quote rv">
+      <blockquote>“Our agents used to write straight into the CRM. Now every change is a <span class="gray">diff we actually read.”</span></blockquote>
+      <div class="who"><b>Customer name</b><span>Title · Company</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= SCALE ======================= -->
+<section>
+  <div class="frame">
+    <div class="scale" style="border-top:0">
+      <div class="curve">
+        <svg viewBox="0 0 1392 760" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="fadeR" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient>
+            <pattern id="vl" width="8" height="10" patternUnits="userSpaceOnUse"><rect width="1" height="10" fill="rgba(26,27,30,.07)"/></pattern>
+            <clipPath id="under"><path d="M0 660 C 560 660 960 560 1392 -10 L1392 760 L0 760Z"/></clipPath>
+          </defs>
+          <rect width="1392" height="760" fill="url(#vl)" clip-path="url(#under)"/>
+          <rect width="1392" height="760" fill="url(#fadeR)"/>
+          <path d="M0 660 C 560 660 960 560 1392 -10" fill="none" stroke="#2f6bf0" stroke-width="1.6" vector-effect="non-scaling-stroke" id="curvePath"/>
+        </svg>
+      </div>
+      <div class="l rv">
+        <span class="badge">Built to trust</span>
+        <h2 class="h2">Run at any speed. <span class="gray">Governed by default, reversible always.</span></h2>
+        <div class="stats">
+          <div class="stat"><div class="n">20</div><div class="lb">policy rules</div></div>
+          <div class="stat"><div class="n">~200</div><div class="lb">engine tests</div></div>
+          <div class="stat"><div class="n">4</div><div class="lb">agents in the fleet</div></div>
+          <div class="stat"><div class="n">0</div><div class="lb">direct writes to main</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STORIES ======================= -->
+<section id="stories">
+  <div class="frame">
+    <div class="stories">
+      <div class="head rv">
+        <span class="badge">Demo scenarios</span>
+        <h2 class="h2">Watch it catch real mistakes. <br><span class="gray">Nine scenarios, one live demo.</span></h2>
+        <a class="btn" href="/demo">Read more <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="stabs" id="stabs">
+        <button class="on" data-i="0"><span class="wm">Acme</span></button>
+        <button data-i="1"><span class="wm m">northwind</span></button>
+        <button data-i="2"><span class="wm"><svg class="g"><use href="#i-bolt"/></svg>Lumen Grid</span></button>
+        <button data-i="3"><span class="wm s">Kestrel Bank</span></button>
+      </div>
+      <div class="feature">
+        <div class="fpane on" style="grid-column:1/-1;grid-template-columns:1fr 1fr">
+          <div class="l"><div class="cat">Stale evidence</div><div class="h3">A $25k forecast change, caught. <span class="gray">How Mainline flagged the Acme PR the moment Acme paused spend.</span></div></div>
+          <div class="r"><div class="ph"><div class="card"><b>#41 Acme expansion</b> <span class="chip a" style="margin-left:6px">Stale</span><div class="gray" style="margin-top:6px">New email contradicts the evidence this PR was built on. Merge blocked until the agent re-runs.</div></div></div></div>
+        </div>
+        <div class="fpane" style="grid-column:1/-1;grid-template-columns:1fr 1fr">
+          <div class="l"><div class="cat">Field conflict</div><div class="h3">220 or 250? <span class="gray">Two agents, one headcount, and a reviewer who picks a side in one click.</span></div></div>
+          <div class="r" style="background:linear-gradient(160deg,#e3e8e1,#bccab9 60%,#98ab96)"><div class="ph"><div class="card"><b>Northwind · headcount</b><div class="gray" style="margin-top:6px">main (web watcher): 220<br>agent/inbox-4: 250</div></div></div></div>
+        </div>
+        <div class="fpane" style="grid-column:1/-1;grid-template-columns:1fr 1fr">
+          <div class="l"><div class="cat">Bad identity merge</div><div class="h3">Two Alex Chens, restored. <span class="gray">One revert un-merged the wrong contacts and put both records back.</span></div></div>
+          <div class="r" style="background:linear-gradient(160deg,#ece3dc,#d2bfae 60%,#b49c87)"><div class="ph"><div class="card"><b>Reverted merge</b><div class="gray" style="margin-top:6px">Alex Chen (Lumen Grid) and Alex Chen (Kestrel Bank) are separate people again.</div></div></div></div>
+        </div>
+        <div class="fpane" style="grid-column:1/-1;grid-template-columns:1fr 1fr">
+          <div class="l"><div class="cat">Schema change</div><div class="h3">A new field, reviewed. <span class="gray">The schema agent proposed procurementContact and backfilled four deals.</span></div></div>
+          <div class="r" style="background:linear-gradient(160deg,#e6e1ee,#c6bcd8 60%,#a497bd)"><div class="ph"><div class="card"><b>+ deal.procurementContact</b><div class="gray" style="margin-top:6px">Schema op as an event. Four backfills in the same PR.</div></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CHANGELOG ======================= -->
+<section id="changelog">
+  <div class="frame">
+    <div class="chlog">
+      <div class="head rv">
+        <span class="badge">Changelog</span>
+        <h2 class="h2">Better every hour. <span class="gray">Shipped live during Night Hack, one PR at a time.</span></h2>
+        <a class="btn" href="https://github.com/Welddevelopment/git_crm/commits/main">View all <svg class="arr" width="12" height="12"><use href="#i-arrow"/></svg></a>
+      </div>
+      <div class="cl rv">
+        <a href="/extension"><div class="dt">October 30, 2026</div><div class="t">Chrome extension</div><div class="d">Review agent PRs right on CRM records.</div></a>
+        <a href="/demo"><div class="dt">October 30, 2026</div><div class="t">Staleness judge</div><div class="d">Claude checks evidence before you merge.</div></a>
+        <a href="/prs"><div class="dt">October 30, 2026</div><div class="t">Semantic rebase</div><div class="d">Merged-away edits follow the survivor.</div></a>
+        <a href="/crm"><div class="dt">October 30, 2026</div><div class="t">Schema pull requests</div><div class="d">Add fields through review, with backfills.</div></a>
+      </div>
+      <div class="ticks"></div>
+      <div class="news">
+        <div class="t">Stay ahead of your agents.<br><span class="gray">Product updates in your inbox.</span></div>
+        <form onsubmit="event.preventDefault();this.querySelector('button').textContent='Subscribed';this.querySelector('input').value=''">
+          <input type="email" placeholder="Your email address" aria-label="Email address" required>
+          <button class="btn primary" type="submit">Subscribe</button>
+        </form>
+      </div>
+      <div class="gapline"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FINAL CTA ======================= -->
+<div class="dark" data-theme="dark">
+  <div class="frame">
+    <section class="final">
+      <div class="bg"></div>
+      <h2>Your agents ship. You hold the merge button.</h2>
+      <div class="ctas">
+        <a class="btn" href="/demo">Watch the demo</a>
+        <a class="btn primary" href="/prs">Start for free</a>
+      </div>
+    </section>
+  </div>
+  <footer>
+    <div class="top">
+      <div><a href="#" class="logo"><svg><use href="#i-logo"/></svg>mainline</a></div>
+      <div class="cols">
+        <div>
+          <div class="grp"><h4>Product</h4>
+            <a href="/prs">Pull requests</a><a href="/crm">CRM (main)</a><a href="/timeline">Time travel</a><a href="/demo">Demo console</a><a href="/extension">Chrome extension <span class="new">New</span></a>
+          </div>
+          <div class="grp"><h4>Company</h4>
+            <a href="#">About</a><a href="https://github.com/Welddevelopment/git_crm/blob/main/STORY.md">Story</a><a href="#">Careers</a><a href="#">Brand</a>
+          </div>
+        </div>
+        <div>
+          <div class="grp"><h4>Agents</h4>
+            <a href="#">Inbox agent</a><a href="#">Hygiene agent</a><a href="#">Schema agent</a><a href="#">Web watcher</a>
+          </div>
+          <div class="grp"><h4>Built with</h4>
+            <a href="#">Claude</a><a href="#">Firecrawl</a><a href="#">Photon</a>
+          </div>
+        </div>
+        <div>
+          <div class="grp"><h4>Adapters</h4>
+            <a href="#">HubSpot</a><a href="#">Salesforce</a><a href="#">Attio</a><a href="#">Pipedrive</a><a href="#">Built-in CRM</a>
+          </div>
+        </div>
+        <div>
+          <div class="grp"><h4>Resources</h4>
+            <a href="https://github.com/Welddevelopment/git_crm">GitHub <svg class="ne"><use href="#i-ne"/></svg></a><a href="https://github.com/Welddevelopment/git_crm/blob/main/README.md">README</a><a href="https://github.com/Welddevelopment/git_crm/blob/main/CONTRACT.md">API contract</a><a href="#">System status <svg class="ne"><use href="#i-ne"/></svg></a><a href="#">Help center</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bot">
+      <div class="soc">
+        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M3.5 6h2v7h-2zM4.5 2.7a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4zM7 6h1.9v1c.3-.6 1.1-1.2 2.3-1.2 2.4 0 2.8 1.6 2.8 3.6V13h-2V9.8c0-.8 0-1.8-1.1-1.8s-1.3.9-1.3 1.7V13H7z"/></svg></a>
+        <a href="#" aria-label="X"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M9.3 7 13.6 2h-1L8.9 6.3 5.9 2H2.5l4.5 6.5L2.5 14h1l4-4.6 3.1 4.6H14zm-1.4 1.6-.5-.6L3.9 2.8h1.6l2.9 4.2.5.6 3.8 5.4h-1.6z"/></svg></a>
+        <a href="https://github.com/Welddevelopment/git_crm" aria-label="GitHub"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 1.5a6.5 6.5 0 0 0-2 12.7c.3 0 .4-.1.4-.3v-1.1c-1.8.4-2.2-.8-2.2-.8-.3-.7-.7-.9-.7-.9-.6-.4 0-.4 0-.4.7 0 1 .7 1 .7.6 1 1.5.7 1.9.5 0-.4.2-.7.4-.9-1.4-.2-3-.7-3-3.2 0-.7.3-1.3.7-1.8-.1-.2-.3-.8 0-1.7 0 0 .6-.2 1.8.7a6 6 0 0 1 3.2 0c1.2-.9 1.8-.7 1.8-.7.3.9.1 1.5 0 1.7.4.5.7 1 .7 1.8 0 2.5-1.5 3-3 3.2.3.2.5.6.5 1.2v1.8c0 .2.1.4.5.3A6.5 6.5 0 0 0 8 1.5z"/></svg></a>
+        <a href="#" aria-label="YouTube"><svg viewBox="0 0 16 16"><path fill="currentColor" d="M14.6 4.8c-.2-.6-.6-1.1-1.2-1.2C12.3 3.3 8 3.3 8 3.3s-4.3 0-5.4.3c-.6.1-1 .6-1.2 1.2C1.1 5.9 1.1 8 1.1 8s0 2.1.3 3.2c.2.6.6 1 1.2 1.2 1.1.3 5.4.3 5.4.3s4.3 0 5.4-.3c.6-.2 1-.6 1.2-1.2.3-1.1.3-3.2.3-3.2s0-2.1-.3-3.2zM6.6 10V6l3.6 2z"/></svg></a>
+      </div>
+      <div class="legal"><span>© 2026 Mainline. Built at Night Hack.</span><a href="#">Terms</a><a href="#">Privacy Policy</a><a href="#">Security</a></div>
+    </div>
+  </footer>
+</div>
+</main>
+
+<script>
+(function(){
+  // header: border on scroll, dark over dark sections
+  var hdr=document.getElementById('hdr');
+  var darks=[].slice.call(document.querySelectorAll('[data-theme=dark]'));
+  function onScroll(){
+    hdr.classList.toggle('scrolled',window.scrollY>4);
+    var y=hdr.getBoundingClientRect().bottom-2, dark=false;
+    darks.forEach(function(d){var r=d.getBoundingClientRect(); if(r.top<=y&&r.bottom>y) dark=true;});
+    hdr.classList.toggle('on-dark',dark);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  // reveal
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){io.observe(el)});
+
+  // platform sticky nav
+  var links=[].slice.call(document.querySelectorAll('#platnav a'));
+  var feats=[].slice.call(document.querySelectorAll('.feat'));
+  function syncNav(){
+    var mid=window.innerHeight*0.4, idx=0;
+    feats.forEach(function(f,i){ if(f.getBoundingClientRect().top<mid) idx=i; });
+    links.forEach(function(a,i){a.classList.toggle('on',i===idx)});
+  }
+  window.addEventListener('scroll',syncNav,{passive:true}); syncNav();
+
+  // signals accordion auto-advance
+  var items=[].slice.call(document.querySelectorAll('#acc .it')), cur=0, t0=performance.now(), DUR=5000;
+  function setItem(i){cur=i;t0=performance.now();items.forEach(function(it,j){it.classList.toggle('on',j===i)})}
+  items.forEach(function(it,i){it.addEventListener('click',function(){setItem(i)})});
+  (function tick(now){var p=Math.min(1,(now-t0)/DUR);var bar=items[cur].querySelector('.pb i');if(bar)bar.style.width=(p*100)+'%';if(p>=1)setItem((cur+1)%items.length);requestAnimationFrame(tick)})(performance.now());
+
+  // vortex wireframe
+  var v=document.getElementById('vortex'), ns='http://www.w3.org/2000/svg', s='';
+  var cx=350, cy=300;
+  for(var k=0;k<7;k++){var rx=40+k*k*9+k*30, ry=(40+k*k*9+k*30)*0.42, oy=-k*k*2.2; s+='<ellipse cx="'+cx+'" cy="'+(cy+oy)+'" rx="'+rx+'" ry="'+ry+'"/>';}
+  for(var a=0;a<16;a++){var ang=a/16*Math.PI*2, x1=cx+Math.cos(ang)*40, y1=cy+Math.sin(ang)*16, x2=cx+Math.cos(ang)*640, y2=cy-200+Math.sin(ang)*500; s+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' Q '+(cx+Math.cos(ang)*260).toFixed(1)+' '+(cy+Math.sin(ang)*90-40).toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1)+'"/>';}
+  s+='<line x1="'+cx+'" y1="'+(cy+8)+'" x2="'+cx+'" y2="640" stroke="rgba(255,255,255,.18)"/>';
+  for(var d=0;d<6;d++){s+='<circle class="pt" r="2" fill="#fff" stroke="none"><animateMotion dur="'+(4+d)+'s" repeatCount="indefinite" begin="'+(-d*1.3)+'s" path="M'+(cx+Math.cos(d)*600).toFixed(0)+' '+(cy-200+Math.sin(d)*480).toFixed(0)+' Q '+(cx+Math.cos(d)*240).toFixed(0)+' '+(cy+Math.sin(d)*80-40).toFixed(0)+' '+cx+' '+cy+'"/></circle>';}
+  v.innerHTML=s;
+
+  // integration tiles (generic glyphs, no third-party logos)
+  var glyphs=['i-mail','i-globe','i-db','i-bot','i-chat','i-shield','i-pr','i-cal','i-bolt','i-layers','i-term','i-branch','i-doc','i-user'];
+  var tr=document.getElementById('track'), html='';
+  for(var r=0;r<2;r++) glyphs.forEach(function(g){html+='<div class="tile"><svg><use href="#'+g+'"/></svg></div>'});
+  tr.innerHTML=html;
+
+  // commit-graph wireframe for SDK box
+  var g=document.getElementById('graph'), gs='';
+  var lanes=[150,250,350,450], ys=[];
+  for(var y=40;y<=380;y+=34) ys.push(y);
+  lanes.forEach(function(x,i){gs+='<line x1="'+x+'" y1="20" x2="'+x+'" y2="400" stroke="rgba(255,255,255,'+(i===0?.4:.16)+')"/>';});
+  [[0,1,2],[1,3,4],[0,2,6],[2,0,8],[0,3,5],[3,0,9],[1,0,7]].forEach(function(e){var x1=lanes[e[0]],x2=lanes[e[1]],y1=ys[e[2]],y2=ys[e[2]]+34;gs+='<path d="M'+x1+' '+y1+' C '+x1+' '+(y1+22)+' '+x2+' '+(y2-22)+' '+x2+' '+y2+'"/>';});
+  ys.forEach(function(y,i){var lane=lanes[i%4===0?0:(i%3)];gs+='<circle cx="'+lane+'" cy="'+y+'" r="4" fill="#111" stroke="rgba(255,255,255,.6)"/>';gs+='<circle cx="'+lanes[0]+'" cy="'+y+'" r="3" fill="#111" stroke="rgba(255,255,255,.45)"/>';});
+  for(var i=0;i<18;i++){gs+='<line x1="'+(470+i*7)+'" y1="'+(80+i*14)+'" x2="'+(560+i*2)+'" y2="'+(80+i*14)+'" stroke="rgba(255,255,255,.09)"/>';}
+  g.innerHTML=gs;
+
+  // story tabs
+  var tabs=[].slice.call(document.querySelectorAll('#stabs button')), panes=[].slice.call(document.querySelectorAll('.fpane'));
+  tabs.forEach(function(b,i){b.addEventListener('click',function(){tabs.forEach(function(x,j){x.classList.toggle('on',i===j)});panes.forEach(function(p,j){p.classList.toggle('on',i===j)})})});
+})();
+</script>
+</body>
+</html>
