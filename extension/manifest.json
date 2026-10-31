@@ -1,20 +1,37 @@
 {
   "manifest_version": 3,
-  "name": "Mainline — PRs for your CRM agents",
+  "name": "Mainline \u2014 PRs for your CRM agents",
   "short_name": "Mainline",
   "version": "0.1.0",
   "description": "Review your AI agents' CRM changes as pull requests, right next to the record in HubSpot, Attio, Salesforce or Pipedrive.",
   "action": {
     "default_title": "Open Mainline",
-    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
-  "side_panel": { "default_path": "sidepanel.html" },
-  "background": { "service_worker": "background.js" },
-  "permissions": ["sidePanel", "tabs", "storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "storage"
+  ],
   "host_permissions": [
-    "https://app.hubspot.com/*",
-    "https://app-eu1.hubspot.com/*",
+    "https://*.hubspot.com/*",
     "https://app.attio.com/*",
     "https://*.lightning.force.com/*",
     "https://*.pipedrive.com/*",
