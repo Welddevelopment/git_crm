@@ -1,5 +1,5 @@
 /**
- * Push a set of Mainline entities (the seed world, or current main) INTO a HubSpot portal, so the demo has a
+ * Push a set of Git CRM entities (the seed world, or current main) INTO a HubSpot portal, so the demo has a
  * realistic HubSpot. Idempotent: each record is searched by natural key first (company domain, contact email,
  * deal name); existing records are PATCHed only for properties that differ, missing ones are created with
  * their company association. Shared by scripts/hubspot-seed.ts and POST /api/integrations/hubspot/seed.
@@ -17,12 +17,12 @@ export interface HubSpotSeedResult {
   created: { entity: EntityId; object: HubSpotObject; id: string }[];
   updated: { entity: EntityId; object: HubSpotObject; id: string; properties: string[] }[];
   unchanged: number;
-  /** Mainline entity id -> HubSpot record id */
+  /** Git CRM entity id -> HubSpot record id */
   ids: Record<EntityId, string>;
   errors: string[];
 }
 
-/** Mainline's seed world as it stands after the seeded human edits (no network, no repo). */
+/** Git CRM's seed world as it stands after the seeded human edits (no network, no repo). */
 export function seedWorldState(now = Date.now()): CRMState {
   const events: Event[] = seedMainEvents(now).map((e: NewEvent, i) => ({
     ...e, id: `seed_${i + 1}`, branch: "main", seq: i + 1, ts: e.ts ?? now,

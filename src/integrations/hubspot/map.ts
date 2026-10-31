@@ -1,5 +1,5 @@
 /**
- * HubSpot <-> Mainline field mapping (pure, no I/O). Single source of truth for the adapter (write-back),
+ * HubSpot <-> Git CRM field mapping (pure, no I/O). Single source of truth for the adapter (write-back),
  * the importer / poller (read), the seed, and the HubSpot-compatible proxy (agent writes).
  *
  *   deal:    dealname <-> name, amount <-> amount (number), dealstage <-> stage (value map below),
@@ -31,7 +31,7 @@ export function normalizeObject(objectType: string | null | undefined): HubSpotO
 }
 
 // ---------- deal stages ----------
-/** HubSpot default sales pipeline stage id -> Mainline stage. */
+/** HubSpot default sales pipeline stage id -> Git CRM stage. */
 export const HS_STAGE_TO_MAINLINE: Record<string, string> = {
   appointmentscheduled: "demo",
   qualifiedtobuy: "discovery",
@@ -41,7 +41,7 @@ export const HS_STAGE_TO_MAINLINE: Record<string, string> = {
   closedwon: "closed_won",
   closedlost: "closed_lost",
 };
-/** Mainline stage -> HubSpot default pipeline stage id (inverse; `demo` -> presentationscheduled). */
+/** Git CRM stage -> HubSpot default pipeline stage id (inverse; `demo` -> presentationscheduled). */
 export const MAINLINE_STAGE_TO_HS: Record<string, string> = {
   discovery: "qualifiedtobuy",
   demo: "presentationscheduled",
@@ -51,7 +51,7 @@ export const MAINLINE_STAGE_TO_HS: Record<string, string> = {
   closed_lost: "closedlost",
 };
 
-/** HubSpot dealstage (or a Mainline stage name, or a label like "Contract Sent") -> Mainline stage; null if unknown. */
+/** HubSpot dealstage (or a Git CRM stage name, or a label like "Contract Sent") -> Git CRM stage; null if unknown. */
 export function stageFromHubSpot(v: unknown): string | null {
   if (typeof v !== "string") return null;
   const s = v.trim().toLowerCase();
@@ -158,7 +158,7 @@ export interface MappedHubSpot {
 }
 
 /**
- * HubSpot `properties` -> Mainline attrs for one entity type. Only properties that are present (and not
+ * HubSpot `properties` -> Git CRM attrs for one entity type. Only properties that are present (and not
  * blank) produce attrs, so a partial PATCH maps to a partial update. `extraFields` lets callers accept our own
  * field names (e.g. a schema field like `procurementContact`) for properties HubSpot doesn't have.
  */
@@ -224,7 +224,7 @@ export function propertiesToAttrs(
   return out;
 }
 
-/** Mainline attrs -> HubSpot `properties` (strings, as the HubSpot API wants them). Unmapped fields are dropped. */
+/** Git CRM attrs -> HubSpot `properties` (strings, as the HubSpot API wants them). Unmapped fields are dropped. */
 export function attrsToProperties(entityType: EntityType, attrs: Record<string, FieldValue | undefined>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [field, v] of Object.entries(attrs)) {
@@ -253,7 +253,7 @@ export function attrsToProperties(entityType: EntityType, attrs: Record<string, 
   return out;
 }
 
-/** Field-level equality in Mainline space (numbers vs numeric strings, case-insensitive domains/emails). */
+/** Field-level equality in Git CRM space (numbers vs numeric strings, case-insensitive domains/emails). */
 export function sameValue(field: string, a: FieldValue | undefined, b: FieldValue | undefined): boolean {
   const n = (v: FieldValue | undefined) => (v === undefined || v === null ? "" : Array.isArray(v) ? v.join(";") : String(v).trim());
   if (field === "domain" || field === "email") return n(a).toLowerCase() === n(b).toLowerCase();
@@ -283,8 +283,8 @@ const hsIdOf = (e: EntityRecord): string | null => {
 export { hsIdOf as hubspotIdOf };
 
 /**
- * HubSpot record -> Mainline entity id. Matches `attrs.hubspotId` (preferring live entities, following merge
- * aliases), then falls back to a Mainline id/slug (`deal:acme-platform`, `acme-platform`, `hs-<id>`) so the
+ * HubSpot record -> Git CRM entity id. Matches `attrs.hubspotId` (preferring live entities, following merge
+ * aliases), then falls back to a Git CRM id/slug (`deal:acme-platform`, `acme-platform`, `hs-<id>`) so the
  * proxy and the extension work without a real HubSpot portal. `objectType` null = any type.
  */
 export function resolveHubSpotRecord(state: CRMState, objectType: string | null | undefined, id: string): EntityId | null {
@@ -311,7 +311,7 @@ export function resolveHubSpotRecord(state: CRMState, objectType: string | null 
   return null;
 }
 
-/** Render a Mainline entity as a HubSpot CRM v3 object (`{id, properties, createdAt, updatedAt, archived}`). */
+/** Render a Git CRM entity as a HubSpot CRM v3 object (`{id, properties, createdAt, updatedAt, archived}`). */
 export function toHubSpotObject(entity: EntityRecord, state: CRMState): {
   id: string; properties: Record<string, string | null>; createdAt: string; updatedAt: string; archived: boolean;
   associations?: Record<string, { results: { id: string; type: string }[] }>;

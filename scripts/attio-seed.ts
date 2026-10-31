@@ -1,5 +1,5 @@
 /**
- * Push Mainline's seed world (src/seed: 10 companies, 25 people, 10 deals) into YOUR Attio workspace.
+ * Push Git CRM's seed world (src/seed: 10 companies, 25 people, 10 deals) into YOUR Attio workspace.
  *
  * Usage:
  *   ATTIO_TOKEN=<token> npx tsx scripts/attio-seed.ts

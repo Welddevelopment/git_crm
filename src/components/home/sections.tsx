@@ -34,11 +34,11 @@ export function Hero({ badges }: { badges?: ReactNode }) {
   return (
     <section className={h.hero}>
       <div>
-        <div className={h.eyebrowRow}><span className={h.eyebrow}>⎇ Mainline · version control for CRM agents</span>{badges}</div>
+        <div className={h.eyebrowRow}><span className={h.eyebrow}>⎇ Git CRM · version control for CRM agents</span>{badges}</div>
         <h1 className={h.headline}>Agents never write to your CRM. <em>They open PRs against it.</em></h1>
         <p className={h.subhead}>
           A git layer in front of your CRM. Every AI agent works on its own <b>branch</b> and opens a <b>pull request with evidence</b>;
-          Mainline merges them, catches conflicts, holds risky changes for you, and can revert anything.
+          Git CRM merges them, catches conflicts, holds risky changes for you, and can revert anything.
         </p>
         <div className={h.ctas}>
           <a className={`${h.cta} ${h.ctaPrimary}`} href="/demo"><IconPlay /> Run the demo</a>
@@ -62,7 +62,7 @@ export function Hero({ badges }: { badges?: ReactNode }) {
 
 const STEPS: { title: string; body: string; color: string; icon: ReactNode }[] = [
   { title: "Agents propose", body: "Each agent writes to its own branch and opens a PR, every field backed by evidence.", color: "var(--agent)", icon: <IconBranch /> },
-  { title: "Mainline checks", body: "Three-way merge, conflicts between agents, branch-protection policy, stale evidence.", color: "var(--accent)", icon: <IconCheck /> },
+  { title: "Git CRM checks", body: "Three-way merge, conflicts between agents, branch-protection policy, stale evidence.", color: "var(--accent)", icon: <IconCheck /> },
   { title: "You review", body: "Approve in the web app, in the Chrome side panel on the CRM record, or by text.", color: "var(--human)", icon: <IconReview /> },
   { title: "Your CRM updates", body: "Write-back to HubSpot or Attio with full history. Revert any change, any time.", color: "var(--add)", icon: <IconDb /> },
 ];

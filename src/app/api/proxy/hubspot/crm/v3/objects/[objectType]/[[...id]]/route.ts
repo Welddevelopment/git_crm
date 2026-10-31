@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 /**
  * HubSpot-compatible proxy: point an agent's HubSpot base URL at <mainline>/api/proxy/hubspot.
- *   PATCH /crm/v3/objects/{deals|contacts|companies|0-x}/{id}   update -> Mainline PR (202)
- *   POST  /crm/v3/objects/{type}                                create -> Mainline PR (202)
+ *   PATCH /crm/v3/objects/{deals|contacts|companies|0-x}/{id}   update -> Git CRM PR (202)
+ *   POST  /crm/v3/objects/{type}                                create -> Git CRM PR (202)
  *   GET   /crm/v3/objects/{type}[/{id}], POST .../search        read from main
  * Headers: x-mainline-agent (default "external-agent"), x-mainline-reason. Authorization is ignored.
  */

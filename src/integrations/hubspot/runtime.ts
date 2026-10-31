@@ -1,6 +1,6 @@
 /**
  * Process-wide HubSpot sync state (survives Next.js module duplication via globalThis):
- *  - echoes: field values Mainline itself just pushed to HubSpot (60s), so the poller doesn't import them back
+ *  - echoes: field values Git CRM itself just pushed to HubSpot (60s), so the poller doesn't import them back
  *  - snapshot: last-seen HubSpot value per (record, field), so polls only import what changed IN HubSpot
  *  - poller handle, lastSync watermark, last result, portalId for /api/integrations/hubspot/status
  */
@@ -21,7 +21,7 @@ export interface HubSpotImportResult {
 
 interface HubSpotRuntime {
   echoes: Map<string, { value: string; until: number }>; // "<object>/<id>::<field>" -> pushed value
-  createdIds: Map<string, number>; // "<object>/<id>" created by Mainline -> until
+  createdIds: Map<string, number>; // "<object>/<id>" created by Git CRM -> until
   snapshot: Map<string, string>; // "<object>/<id>::<field>" -> JSON of last-seen mapped value
   timer?: ReturnType<typeof setInterval>;
   intervalMs?: number;
@@ -43,13 +43,13 @@ export function hubspotRuntime(): HubSpotRuntime {
 const k = (object: string, id: string, field: string) => `${object}/${id}::${field}`;
 const norm = (v: unknown) => JSON.stringify(v === undefined ? null : v);
 
-/** Called by the HubSpot adapter right before it writes these Mainline field values to a HubSpot record. */
+/** Called by the HubSpot adapter right before it writes these Git CRM field values to a HubSpot record. */
 export function markEcho(object: string, id: string, values: Record<string, unknown>, now = Date.now()): void {
   const rt = hubspotRuntime();
   for (const [f, v] of Object.entries(values)) rt.echoes.set(k(object, id, f), { value: norm(v), until: now + ECHO_TTL_MS });
 }
 
-/** True if `value` for this field is what Mainline pushed in the last 60s (i.e. our own write coming back). */
+/** True if `value` for this field is what Git CRM pushed in the last 60s (i.e. our own write coming back). */
 export function isEcho(object: string, id: string, field: string, value: unknown, now = Date.now()): boolean {
   const rt = hubspotRuntime();
   const key = k(object, id, field);

@@ -218,7 +218,7 @@
     var ctx = S.ctx || { crm: null, record: null };
     var rec = ctx.record;
 
-    // Mainline's own PR page: focus that PR, plus the rest of the queue.
+    // Git CRM's own PR page: focus that PR, plus the rest of the queue.
     if (rec && rec.crm === "mainline" && rec.kind === "pr") {
       var rr = await Promise.all([api("/api/prs/" + encodeURIComponent(rec.id)), api("/api/prs?status=open")]);
       if (!rr[1].ok) return { mode: "error", error: rr[1] };

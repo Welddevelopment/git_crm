@@ -1,4 +1,4 @@
-# Mainline — team contract (read fully before writing code)
+# Git CRM — team contract (read fully before writing code)
 
 **Product:** a layer in front of your CRM. AI agents never write to the CRM directly — they work on branches and open pull requests. Humans (or trusted agents, by policy) merge. Three-way merge, conflicts, revert, time travel, blame, and PRs that detect when their own evidence went stale.
 

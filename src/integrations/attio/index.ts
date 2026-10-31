@@ -1,12 +1,12 @@
 /**
- * Attio connector: Attio is the system of record humans edit; Mainline mirrors it and governs agent writes.
+ * Attio connector: Attio is the system of record humans edit; Git CRM mirrors it and governs agent writes.
  *
  *  - importFromAttio(repo): pull companies / people / deals, create `company:at-<record_id>` (etc.) for new ones,
- *    link existing Mainline entities by natural key (domain / email / name) and record `attrs.attioId`,
+ *    link existing Git CRM entities by natural key (domain / email / name) and record `attrs.attioId`,
  *    and commit `field.set` for values that differ. Human edits made in Attio land on main as actor "Attio".
  *  - startAttioSync(repo): the same thing every 20s, but only for values that changed IN Attio since the last
- *    poll, skipping echoes of Mainline's own writes (see adapters/attio.ts) for 60s.
- *  - resolveAttioRecord(state, object, recordId): Attio record -> Mainline entity id (for /api/records/lookup).
+ *    poll, skipping echoes of Git CRM's own writes (see adapters/attio.ts) for 60s.
+ *  - resolveAttioRecord(state, object, recordId): Attio record -> Git CRM entity id (for /api/records/lookup).
  */
 import type { Actor, CRMState, EntityId, FieldValue, NewEvent } from "../../core/types";
 import type { Repo } from "../../server/repo";
@@ -36,8 +36,8 @@ const SYNC_FIELDS: Record<string, string[]> = {
 
 // ---------- lookup ----------
 /**
- * Attio record -> Mainline entity id. Matches `attrs.attioId` (preferring live entities), then falls back to a
- * Mainline id/slug (`deal:acme-platform`, `acme-platform`, `at-<record_id>`), so it works without a real Attio.
+ * Attio record -> Git CRM entity id. Matches `attrs.attioId` (preferring live entities), then falls back to a
+ * Git CRM id/slug (`deal:acme-platform`, `acme-platform`, `at-<record_id>`), so it works without a real Attio.
  * `objectSlug` may be companies|people|deals, Attio singulars, or our types (company|contact|deal); null = any.
  * Merged-away entities resolve to their survivor.
  */
@@ -164,7 +164,7 @@ async function doImport(repo: RepoLike, opts: ImportOptions): Promise<AttioImpor
           events.push({ actor: LINK_ACTOR, ts, op: { type: "field.set", entity: linked, field: "attioId", value: rid, prev: null }, reason: `Linked to Attio ${object} record ${rid}` });
           result.linked.push(linked);
         } else if (isEcho(rid, "__record")) {
-          continue; // a record Mainline just created; the adapter is about to record its attioId
+          continue; // a record Git CRM just created; the adapter is about to record its attioId
         } else {
           entityId = `${type}:${IMPORT_PREFIX}${rid}`;
           events.push({ actor: ATTIO_ACTOR, ts, op: { type: "entity.create", entity: entityId, entityType: type, attrs: { ...m.attrs, attioId: rid } }, reason: `Imported from Attio (${object})` });

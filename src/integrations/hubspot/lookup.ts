@@ -1,6 +1,6 @@
 /**
  * Record lookup for the Chrome extension side panel (GET /api/records/lookup). CRM-agnostic:
- *   crm=mainline  id is a Mainline entity id (or a bare slug, resolved per objectType)
+ *   crm=mainline  id is a Git CRM entity id (or a bare slug, resolved per objectType)
  *   crm=hubspot   objectType 0-1|0-2|0-3|contacts|companies|deals, id = HubSpot record id (attrs.hubspotId)
  *   crm=attio     objectType people|companies|deals, id = Attio record id (attrs.attioId)
  * pendingPRs = open PRs whose branch events touch the entity, resolved through main's merge aliases, so a PR
@@ -38,7 +38,7 @@ export function touchedIds(e: Event): EntityId[] {
   }
 }
 
-/** Mainline id from a `crm=mainline` id: full id, or slug + objectType. */
+/** Git CRM id from a `crm=mainline` id: full id, or slug + objectType. */
 function resolveMainline(state: CRMState, objectType: string | null, id: string): EntityId | null {
   const t = normalizeObject(objectType);
   const type = t ? OBJECT_TYPE[t] : objectType?.trim().toLowerCase() || null;

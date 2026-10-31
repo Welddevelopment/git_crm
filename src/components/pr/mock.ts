@@ -56,25 +56,25 @@ function docs(now: number): Record<string, EvidenceDoc> {
   const d: EvidenceDoc[] = [
     {
       id: "email_priya_msa", kind: "email", ts: now - 2 * DAY, title: "Re: Platform rollout — next steps",
-      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@mainline.dev"],
+      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@gitcrm.dev"],
       body: "Hi Joel,\n\nThanks for the walkthrough on Tuesday — the team loved it. Could you please send over the MSA so legal can start reviewing? We'd like 45 seats, total $45,000, and we're aiming to close by mid-December.\n\nBest,\nPriya Sharma — Engineering Manager\nAcme Robotics",
       entities: ["company:acme", "deal:acme-platform", "contact:priya-acme"],
     },
     {
       id: "email_priya_sig", kind: "email", ts: now - 1 * DAY - 5 * HOUR, title: "Security questionnaire",
-      from: "Priya Sharma <p.sharma@acmerobotics.com>", to: ["joel@mainline.dev"],
+      from: "Priya Sharma <p.sharma@acmerobotics.com>", to: ["joel@gitcrm.dev"],
       body: "Joel — attaching our vendor security questionnaire. No rush, end of next week is fine.\n\nPriya Sharma — VP Engineering\nAcme Robotics",
       entities: ["company:acme", "contact:priya-sharma"],
     },
     {
       id: "email_priya_pause", kind: "email", ts: now - 4 * MIN, title: "Platform rollout — pausing until Q1",
-      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@mainline.dev"],
+      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@gitcrm.dev"],
       body: "Hi Joel,\n\nBad news, I'm afraid: finance just announced a budget freeze for the rest of the year. We're pausing the platform rollout until Q1 and won't be able to sign the MSA this quarter. I'll reach out in January.\n\nPriya Sharma — VP Engineering\nAcme Robotics",
       entities: ["company:acme", "deal:acme-platform", "contact:priya-acme"],
     },
     {
       id: "email_dana_acq", kind: "email", ts: now - 3 * DAY, title: "Re: Fleet tracking proposal",
-      from: "Dana Ortiz <dana@northwindfreight.com>", to: ["joel@mainline.dev"],
+      from: "Dana Ortiz <dana@northwindfreight.com>", to: ["joel@gitcrm.dev"],
       body: "Hey Joel, quick update before we review pricing — we're now 250 people after the acquisition of Bayline closed, so the seat count in the proposal should go up.\n\nDana Ortiz — Head of Logistics\nNorthwind Freight",
       entities: ["company:northwind", "deal:northwind-fleet", "contact:dana-northwind"],
     },
@@ -85,19 +85,19 @@ function docs(now: number): Record<string, EvidenceDoc> {
     },
     {
       id: "email_procurement_acme", kind: "email", ts: now - 2 * DAY - 3 * HOUR, title: "Re: MSA",
-      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@mainline.dev"],
+      from: "Priya Sharma <priya@acmerobotics.com>", to: ["joel@gitcrm.dev"],
       body: "Also, please loop in our procurement contact, Sam Lee (sam@acmerobotics.com) on the paperwork.\n\nPriya Sharma — Engineering Manager\nAcme Robotics",
       entities: ["deal:acme-platform", "company:acme"],
     },
     {
       id: "email_procurement_northwind", kind: "email", ts: now - 4 * DAY, title: "Pricing review",
-      from: "Dana Ortiz <dana@northwindfreight.com>", to: ["joel@mainline.dev"],
+      from: "Dana Ortiz <dana@northwindfreight.com>", to: ["joel@gitcrm.dev"],
       body: "For the pricing review, loop in our procurement contact, Rita Gomez (rita@northwindfreight.com). She owns vendor onboarding.\n\nDana Ortiz — Head of Logistics\nNorthwind Freight",
       entities: ["deal:northwind-fleet", "company:northwind"],
     },
     {
       id: "email_procurement_orbital", kind: "email", ts: now - 5 * DAY, title: "Pilot paperwork",
-      from: "Mei Tanaka <mei@orbitalfoods.com>", to: ["joel@mainline.dev"],
+      from: "Mei Tanaka <mei@orbitalfoods.com>", to: ["joel@gitcrm.dev"],
       body: "Happy to move ahead with the pilot. Please loop in our procurement contact, Ken Ito (ken@orbitalfoods.com) for the PO.\n\nMei Tanaka — VP Operations\nOrbital Foods",
       entities: ["deal:orbital-supply", "company:orbital"],
     },
@@ -113,7 +113,7 @@ function docs(now: number): Record<string, EvidenceDoc> {
     },
     {
       id: "email_orbital_close", kind: "email", ts: now - 30 * HOUR, title: "Timeline",
-      from: "Mei Tanaka <mei@orbitalfoods.com>", to: ["joel@mainline.dev"],
+      from: "Mei Tanaka <mei@orbitalfoods.com>", to: ["joel@gitcrm.dev"],
       body: "We'd like to close by November 15 if the pilot scope stays as is.\n\nMei Tanaka — VP Operations\nOrbital Foods",
       entities: ["deal:orbital-supply"],
     },

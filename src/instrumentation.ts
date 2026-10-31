@@ -1,6 +1,6 @@
 /**
  * Runs once when the Next.js server starts.
- * Railway's free plan sleeps a service after ~10 min without outbound traffic, and Mainline keeps
+ * Railway's free plan sleeps a service after ~10 min without outbound traffic, and Git CRM keeps
  * state in memory — so we ping our own public URL every 4 minutes to keep the demo world alive.
  */
 export async function register() {

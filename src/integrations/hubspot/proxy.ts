@@ -1,7 +1,7 @@
 /**
  * HubSpot-compatible write proxy. An agent that already talks to HubSpot changes ONE thing, its base URL:
  *   https://api.hubapi.com  ->  <mainline>/api/proxy/hubspot
- * Writes never reach HubSpot directly: they become a Mainline PR (branch + policy + staleness + review), and
+ * Writes never reach HubSpot directly: they become a Git CRM PR (branch + policy + staleness + review), and
  * only merged changes are pushed to HubSpot by the adapter. Reads are served from main.
  *
  *   PATCH /crm/v3/objects/{type}/{id}   update -> field.set PR      (202)
@@ -10,7 +10,7 @@
  *   GET   /crm/v3/objects/{type}        list from main
  *   POST  /crm/v3/objects/{type}/search list from main (filters ignored except a simple EQ)
  *
- * {type}: deals|contacts|companies|0-1|0-2|0-3. {id}: HubSpot record id (attrs.hubspotId) or a Mainline id/slug
+ * {type}: deals|contacts|companies|0-1|0-2|0-3. {id}: HubSpot record id (attrs.hubspotId) or a Git CRM id/slug
  * (`acme-platform` with type deals -> deal:acme-platform), so the proxy works without a real HubSpot portal.
  * Actor: header `x-mainline-agent` (default "external-agent"). Reason: header `x-mainline-reason` or body
  * `mainline: {reason, title?, evidence: [{docId?, quote?, claim}]}`. The caller's Authorization header is ignored.
@@ -32,7 +32,7 @@ export interface ProxyRequest {
   body: unknown;
   agent?: string | null;
   reason?: string | null;
-  /** absolute origin of the Mainline app, for prUrl */
+  /** absolute origin of the Git CRM app, for prUrl */
   origin: string;
 }
 
@@ -217,7 +217,7 @@ function planUpdate(state: CRMState, type: string, object: HubSpotObject, rid: s
 
 export async function handleHubSpotProxy(repo: ProxyRepo, req: ProxyRequest): Promise<ProxyResult> {
   const object = normalizeObject(req.objectType);
-  if (!object) return hubspotError(400, "VALIDATION_ERROR", `Unable to infer object type from: ${req.objectType}. The Mainline HubSpot proxy supports deals, contacts and companies.`);
+  if (!object) return hubspotError(400, "VALIDATION_ERROR", `Unable to infer object type from: ${req.objectType}. The Git CRM HubSpot proxy supports deals, contacts and companies.`);
   const type = OBJECT_TYPE[object];
   const method = req.method.toUpperCase();
   const agentRaw = (req.agent ?? "").trim();
@@ -260,7 +260,7 @@ export async function handleHubSpotProxy(repo: ProxyRepo, req: ProxyRequest): Pr
     const pr = await repo.propose(agent, {
       title: meta.title ?? `${author.name} via HubSpot API: create ${type} ${name}`,
       description:
-        `${author.name} called POST /crm/v3/objects/${object} through the Mainline HubSpot proxy (the write was intercepted, not sent to HubSpot).\n\n` +
+        `${author.name} called POST /crm/v3/objects/${object} through the Git CRM HubSpot proxy (the write was intercepted, not sent to HubSpot).\n\n` +
         fields.map((f) => `- ${f}: ${fmt(m.attrs[f])}`).join("\n") +
         (m.ignored.length ? `\n\nIgnored properties: ${m.ignored.join(", ")}` : "") +
         (reason ? `\n\nReason: ${reason}` : ""),
@@ -316,7 +316,7 @@ export async function handleHubSpotProxy(repo: ProxyRepo, req: ProxyRequest): Pr
     const pr = await repo.propose(agent, {
       title: meta.title ?? `${author.name} via HubSpot API: ${subject}`,
       description:
-        `${author.name} called ${path} through the Mainline HubSpot proxy (the write was intercepted, not sent to HubSpot).\n\n` +
+        `${author.name} called ${path} through the Git CRM HubSpot proxy (the write was intercepted, not sent to HubSpot).\n\n` +
         lines.join("\n") +
         (ignored.size ? `\n\nIgnored properties: ${[...ignored].join(", ")}` : "") +
         (reason ? `\n\nReason: ${reason}` : "") +
@@ -337,7 +337,7 @@ export async function handleHubSpotProxy(repo: ProxyRepo, req: ProxyRequest): Pr
   }
 
   if (method === "DELETE") {
-    return hubspotError(403, "MAINLINE_BLOCKED", "Agents may not delete CRM records through Mainline (policy: entity-delete is blocked).");
+    return hubspotError(403, "MAINLINE_BLOCKED", "Agents may not delete CRM records through Git CRM (policy: entity-delete is blocked).");
   }
   return hubspotError(405, "METHOD_NOT_ALLOWED", `${method} not supported on this path`);
 }

@@ -8,7 +8,7 @@ export function formatPRMessage(pr: PullRequest, summary?: string): string {
   const agent = ("name" in pr.author && pr.author.name) || pr.author.id;
   const num = pr.id.replace(/^pr_/, "");
   const reasons = pr.policy?.reasons?.length ? pr.policy.reasons.join("; ") : summary || "needs review";
-  return `Mainline: ${agent} opened PR #${num} "${pr.title}" — ${reasons}. Reply Y to merge, N to close.`;
+  return `Git CRM: ${agent} opened PR #${num} "${pr.title}" — ${reasons}. Reply Y to merge, N to close.`;
 }
 
 export interface PhotonOptions {

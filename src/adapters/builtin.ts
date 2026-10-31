@@ -3,7 +3,7 @@ import type { TargetAdapter } from "../core/types";
 
 export const builtinAdapter: TargetAdapter = {
   id: "builtin",
-  name: "Mainline built-in CRM",
+  name: "Git CRM built-in CRM",
   async push(events) {
     return { ok: true, pushed: events.length };
   },
