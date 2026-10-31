@@ -7,7 +7,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en"><body>
       <nav style={{ display: "flex", gap: 20, alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--border)" }}>
         <strong>⎇ Mainline</strong>
-        <a href="/">Overview</a><a href="/prs">Pull requests</a><a href="/crm">CRM (main)</a><a href="/timeline">Time travel</a><a href="/demo">Demo</a>
+        <a href="/">Overview</a><a href="/prs">Pull requests</a><a href="/crm">CRM (main)</a><a href="/timeline">Time travel</a><a href="/demo">Demo</a><a href="/extension">Extension</a>
       </nav>
       <main style={{ padding: 20 }}>{children}</main>
     </body></html>
