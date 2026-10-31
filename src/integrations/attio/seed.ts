@@ -10,6 +10,7 @@ import { seedMainEvents } from "../../seed";
 import { AttioClient, AttioError, naturalKeyFilter, ownerResolver, writeWithOptionFallback } from "./client";
 import { SLUG_FIELD, TYPE_OBJECT, mapAttioRecord, resolveAlias, sameValue, toAttioValues, type AttioObject } from "./map";
 import { attioRuntime, markEcho } from "./runtime";
+import { completeDealCreate, loadDealSchema, mapDealStage } from "./schema";
 
 export interface AttioSeedResult {
   ok: boolean;
@@ -49,6 +50,7 @@ export async function seedAttio(opts: { client?: AttioClient; state?: CRMState; 
   attioRuntime().hasDeals = hasDeals;
   if (!hasDeals) res.deals = "missing";
   const members = hasDeals ? await client.members() : [];
+  const dealSchema = hasDeals ? await loadDealSchema(client, { members }) : undefined;
 
   const entities = Object.values(state.entities)
     .filter((e) => !e.deleted && !e.mergedInto && TYPE_OBJECT[e.type] && (hasDeals || e.type !== "deal"))
@@ -63,7 +65,8 @@ export async function seedAttio(opts: { client?: AttioClient; state?: CRMState; 
 
   for (const e of entities) {
     const object = TYPE_OBJECT[e.type] as AttioObject;
-    const values = toAttioValues(e.type, e.attrs, ctx);
+    let values = toAttioValues(e.type, e.attrs, ctx);
+    if (object === "deals" && dealSchema) values = mapDealStage(values, dealSchema);
     try {
       let rid = res.ids[e.id];
       let existing = rid ? await client.get(object, rid).catch((err) => (err instanceof AttioError && err.status === 404 ? undefined : Promise.reject(err))) : undefined;
@@ -72,7 +75,14 @@ export async function seedAttio(opts: { client?: AttioClient; state?: CRMState; 
         existing = key ? (await client.query(object, { limit: 1, filter: naturalKeyFilter(object, key) }))[0] : undefined;
       }
       if (!existing) {
-        const rec = await writeWithOptionFallback(values, (v) => client.create(object, v));
+        if (object === "deals" && dealSchema) {
+          values = completeDealCreate(values, dealSchema, {
+            name: typeof e.attrs.name === "string" ? e.attrs.name : undefined,
+            amount: Number.isFinite(Number(e.attrs.amount)) ? Number(e.attrs.amount) : undefined,
+            companyRecordId: e.attrs.company ? ctx.attioIdOf(String(e.attrs.company)) : undefined,
+          });
+        }
+        const rec = await writeWithOptionFallback(values, (v) => client.create(object, v), { protect: object === "deals" ? dealSchema?.required : undefined });
         rid = rec.id.record_id;
         markEcho(rid, ["__record", ...Object.keys(values).map((s) => SLUG_FIELD[s] ?? s)]);
         res.ids[e.id] = rid;
@@ -102,7 +112,7 @@ export async function seedAttio(opts: { client?: AttioClient; state?: CRMState; 
         continue;
       }
       markEcho(rid, Object.keys(diff).map((s) => SLUG_FIELD[s] ?? s));
-      await writeWithOptionFallback(diff, (v) => client.update(object, rid!, v));
+      await writeWithOptionFallback(diff, (v) => client.update(object, rid!, v), { skipIfEmpty: true });
       const fields = Object.keys(diff).map((s) => SLUG_FIELD[s] ?? s);
       res.updated.push({ entity: e.id, object, recordId: rid, fields });
       log(`updated ${object.padEnd(9)} ${rid}  ${e.id} (${fields.join(", ")})`);
