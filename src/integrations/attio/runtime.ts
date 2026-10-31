@@ -1,6 +1,6 @@
 /**
  * Process-wide Attio sync state (survives Next.js module duplication via globalThis):
- *  - echoes: fields Mainline itself just wrote to Attio, so the poller doesn't import them back as "human" edits
+ *  - echoes: fields Git CRM itself just wrote to Attio, so the poller doesn't import them back as "human" edits
  *  - snapshot: last-seen Attio value per (record, field), so polls only import what changed IN Attio
  *  - poller handle + last result for /api/integrations/attio/status
  */

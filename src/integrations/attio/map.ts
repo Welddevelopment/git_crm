@@ -1,5 +1,5 @@
 /**
- * Attio <-> Mainline field mapping (pure, no I/O).
+ * Attio <-> Git CRM field mapping (pure, no I/O).
  *
  * Attio records carry `values: { <attr_slug>: Entry[] }` where each slug holds a history of entries; the
  * active one has `active_until: null`. We read active entries only, and are tolerant of the write shorthand
@@ -124,7 +124,7 @@ export function employeeRangeFor(n: number): string {
   return (RANGES.find((r) => n <= r.max) ?? RANGES[RANGES.length - 1]!).title;
 }
 
-// ---------- Attio -> Mainline ----------
+// ---------- Attio -> Git CRM ----------
 export interface MappedAttio {
   object: AttioObject;
   entityType: EntityType;
@@ -138,7 +138,7 @@ export interface MappedAttio {
 }
 
 export interface MapContext {
-  /** Attio record id -> Mainline entity id (for record references) */
+  /** Attio record id -> Git CRM entity id (for record references) */
   resolveRef?: (object: AttioObject, recordId: string) => EntityId | null;
   /** workspace member id -> display name (deal owner) */
   memberName?: (memberId: string) => string | undefined;
@@ -214,9 +214,9 @@ export function sameValue(m: MappedAttio, field: string, ours: FieldValue | unde
   return JSON.stringify(ours) === JSON.stringify(theirs);
 }
 
-// ---------- Mainline -> Attio (write shorthand) ----------
+// ---------- Git CRM -> Attio (write shorthand) ----------
 export interface ToAttioContext {
-  /** Mainline entity id -> Attio record id (for references) */
+  /** Git CRM entity id -> Attio record id (for references) */
   attioIdOf?: (entityId: EntityId) => string | undefined;
   /** deal owner name -> workspace member id */
   ownerMemberId?: (owner: string) => string | undefined;
@@ -268,14 +268,14 @@ export const SLUG_FIELD: Record<string, string> = {
   value: "amount", stage: "stage", associated_company: "company", owner: "owner",
 };
 
-// ---------- Mainline -> Attio (read shape, for the proxy's GET/query) ----------
+// ---------- Git CRM -> Attio (read shape, for the proxy's GET/query) ----------
 export function resolveAlias(state: CRMState, id: EntityId): EntityId {
   let cur = id;
   for (let i = 0; i < 20 && state.aliases?.[cur]; i++) cur = state.aliases[cur]!;
   return cur;
 }
 
-/** Render a Mainline entity in Attio's record shape (active entries only). record_id = attioId or our entity id. */
+/** Render a Git CRM entity in Attio's record shape (active entries only). record_id = attioId or our entity id. */
 export function toAttioRecord(entity: EntityRecord, state: CRMState): AttioRecord {
   const object = TYPE_OBJECT[entity.type] ?? entity.type;
   const a = entity.attrs;

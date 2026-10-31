@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 /**
- * POST -> push Mainline's current main (the seeded demo world + anything merged since) into the HubSpot portal
+ * POST -> push Git CRM's current main (the seeded demo world + anything merged since) into the HubSpot portal
  * behind HUBSPOT_TOKEN (idempotent: matched by domain / email / deal name), record each entity's hubspotId on
  * main, then run a full import. Returns {ok, created, updated, unchanged, ids, portalId, import, errors}.
  */

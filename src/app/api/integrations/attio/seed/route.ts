@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 /**
- * POST -> push Mainline's seed world into the Attio workspace behind ATTIO_TOKEN (idempotent: matched by
+ * POST -> push Git CRM's seed world into the Attio workspace behind ATTIO_TOKEN (idempotent: matched by
  * domain / email / deal name), then import so main records each entity's attioId.
  * Returns {ok, workspace, deals, created, updated, unchanged, ids, import, errors}.
  */

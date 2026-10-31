@@ -72,7 +72,7 @@ describe("mapAttioRecord", () => {
 });
 
 describe("Attio proxy", () => {
-  it("PATCH with a Mainline slug opens a PR held for review and answers 202 in Attio shape", async () => {
+  it("PATCH with a Git CRM slug opens a PR held for review and answers 202 in Attio shape", async () => {
     const repo = await makeRepo();
     const r = await proxy(repo, "PATCH", "deals", ["acme-platform"], { data: { values: { value: 45000 } } });
     expect(r.status).toBe(202);

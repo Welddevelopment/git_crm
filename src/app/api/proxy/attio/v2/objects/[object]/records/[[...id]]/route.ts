@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 /**
  * Attio-compatible proxy: point an agent's Attio base URL at <mainline>/api/proxy/attio/v2.
- *   POST  /objects/{object}/records            create  -> Mainline PR (202)
- *   PATCH /objects/{object}/records/{id}       update  -> Mainline PR (202)
+ *   POST  /objects/{object}/records            create  -> Git CRM PR (202)
+ *   PATCH /objects/{object}/records/{id}       update  -> Git CRM PR (202)
  *   GET   /objects/{object}/records/{id}       read from main
  *   POST  /objects/{object}/records/query      list from main
  * Headers: x-mainline-agent (default "external-agent"), x-mainline-reason. Authorization is ignored.

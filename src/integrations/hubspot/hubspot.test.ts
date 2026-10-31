@@ -122,7 +122,7 @@ describe("HubSpot-compatible proxy", () => {
     expect((await repo.state()).entities["deal:acme-platform"]!.attrs.amount).toBe(20000);
   });
 
-  it("accepts a Mainline slug as the id and defaults the agent", async () => {
+  it("accepts a Git CRM slug as the id and defaults the agent", async () => {
     const repo = await makeRepo();
     const r = await proxy(repo, "PATCH", "0-3", ["northwind-fleet"], { properties: { amount: "65000" } }, undefined, "Dana confirmed 12 more trucks");
     expect(r.status).toBe(202);
@@ -191,7 +191,7 @@ describe("HubSpot-compatible proxy", () => {
 });
 
 describe("record lookup", () => {
-  it("by HubSpot id (0-3) and by Mainline id, with pending PRs and history", async () => {
+  it("by HubSpot id (0-3) and by Git CRM id, with pending PRs and history", async () => {
     const repo = await makeRepo();
     const pr = (await proxy(repo, "PATCH", "deals", ["9001"], { properties: { amount: "45000" } }, "sdr-bot")).body as Body;
 

@@ -1,10 +1,10 @@
 /**
  * Attio-compatible write proxy. An agent points its Attio client at
  *   <mainline>/api/proxy/attio/v2
- * instead of https://api.attio.com/v2. Writes never reach Attio: they become a Mainline PR (branch + policy +
+ * instead of https://api.attio.com/v2. Writes never reach Attio: they become a Git CRM PR (branch + policy +
  * staleness), and only merged changes are pushed to Attio by the adapter. Reads are served from main.
  *
- * The record id in the path may be an Attio record_id (matched via attrs.attioId) or a Mainline id/slug
+ * The record id in the path may be an Attio record_id (matched via attrs.attioId) or a Git CRM id/slug
  * (`acme-platform` with object deals -> deal:acme-platform), so the proxy works without a real Attio.
  * The caller's Authorization header is ignored and never forwarded or stored.
  */
@@ -26,7 +26,7 @@ export interface ProxyRequest {
   body: unknown;
   agent?: string | null;
   reason?: string | null;
-  /** absolute origin of the Mainline app, for prUrl */
+  /** absolute origin of the Git CRM app, for prUrl */
   origin: string;
 }
 
@@ -138,7 +138,7 @@ async function finish(repo: ProxyRepo, pr: PullRequest, object: AttioObject, ent
 
 export async function handleAttioProxy(repo: ProxyRepo, req: ProxyRequest): Promise<ProxyResult> {
   const object = normalizeObject(req.object);
-  if (!object) return attioError(404, "not_found", `Object "${req.object}" is not supported by the Mainline Attio proxy (companies, people, deals).`);
+  if (!object) return attioError(404, "not_found", `Object "${req.object}" is not supported by the Git CRM Attio proxy (companies, people, deals).`);
   const type = OBJECT_TYPE[object];
   const method = req.method.toUpperCase();
   const agentRaw = (req.agent ?? "").trim();
@@ -173,7 +173,7 @@ export async function handleAttioProxy(repo: ProxyRepo, req: ProxyRequest): Prom
     const name = label(undefined, entity);
     const pr = await repo.propose(agent, {
       title: meta.title ?? `Create ${type} "${String(m.attrs.name ?? entity)}" (via Attio API)`,
-      description: `${agent} called POST /v2/objects/${object}/records through the Mainline Attio proxy.\n\n${describe(undefined, m.attrs)}${reason ? `\n\nReason: ${reason}` : ""}`,
+      description: `${agent} called POST /v2/objects/${object}/records through the Git CRM Attio proxy.\n\n${describe(undefined, m.attrs)}${reason ? `\n\nReason: ${reason}` : ""}`,
       events: [{ actor: author, op: { type: "entity.create", entity, entityType: type, attrs: m.attrs }, reason: reason ?? `Create ${name} via Attio API`, ...(meta.evidence?.length ? { evidence: meta.evidence } : {}) }],
     });
     return finish(repo, pr, object, entity, req.origin);
@@ -202,7 +202,7 @@ export async function handleAttioProxy(repo: ProxyRepo, req: ProxyRequest): Prom
     const fields = Object.keys(changes);
     const pr = await repo.propose(agent, {
       title: meta.title ?? `Update ${label(ent, entityId)}: ${fields.join(", ")} (via Attio API)`,
-      description: `${agent} called ${method} /v2/objects/${object}/records/${first} through the Mainline Attio proxy.\n\n${describe(ent, changes, prev)}${reason ? `\n\nReason: ${reason}` : ""}`,
+      description: `${agent} called ${method} /v2/objects/${object}/records/${first} through the Git CRM Attio proxy.\n\n${describe(ent, changes, prev)}${reason ? `\n\nReason: ${reason}` : ""}`,
       readSet,
       events: fields.map((field) => ({
         actor: author,

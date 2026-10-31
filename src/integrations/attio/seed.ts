@@ -1,5 +1,5 @@
 /**
- * Push a set of Mainline entities (the seed world, or current main) into an Attio workspace. Idempotent:
+ * Push a set of Git CRM entities (the seed world, or current main) into an Attio workspace. Idempotent:
  * each record is looked up by natural key first (company domain, person email, deal name); existing records
  * are PATCHed only for fields that differ, missing ones are created. Deals are skipped if the workspace has
  * no deals object. Shared by scripts/attio-seed.ts and POST /api/integrations/attio/seed.
@@ -18,12 +18,12 @@ export interface AttioSeedResult {
   created: { entity: EntityId; object: AttioObject; recordId: string }[];
   updated: { entity: EntityId; object: AttioObject; recordId: string; fields: string[] }[];
   unchanged: number;
-  /** Mainline entity id -> Attio record id */
+  /** Git CRM entity id -> Attio record id */
   ids: Record<EntityId, string>;
   errors: string[];
 }
 
-/** Mainline's seed world as it stands after the seeded human edits (no network, no repo). */
+/** Git CRM's seed world as it stands after the seeded human edits (no network, no repo). */
 export function seedWorldState(now = Date.now()): CRMState {
   const events: Event[] = seedMainEvents(now).map((e: NewEvent, i) => ({
     ...e, id: `seed_${i + 1}`, branch: "main", seq: i + 1, ts: e.ts ?? now,

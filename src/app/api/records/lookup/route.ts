@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 /**
- * GET /api/records/lookup?crm=hubspot|attio|mainline&objectType=0-3|deals|deal&id=<external or Mainline id>
+ * GET /api/records/lookup?crm=hubspot|attio|mainline&objectType=0-3|deals|deal&id=<external or Git CRM id>
  * -> RecordLookup (see src/core/api-contract.ts). CORS-open: called by the Chrome extension side panel.
  */
 import { getRepo } from "@/server/repo";

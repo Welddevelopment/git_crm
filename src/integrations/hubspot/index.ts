@@ -1,12 +1,12 @@
 /**
- * HubSpot connector: HubSpot stays the system humans edit; Mainline mirrors it and governs agent writes.
+ * HubSpot connector: HubSpot stays the system humans edit; Git CRM mirrors it and governs agent writes.
  *
  *  - importFromHubSpot(repo): pull companies / contacts / deals (CRM v3 list, associations to companies, 200 cap
  *    each). Records whose `hubspotId` is known get `field.set` for values that differ; unknown records are
- *    linked to an existing Mainline entity by natural key (company domain / contact email / deal name) and get
+ *    linked to an existing Git CRM entity by natural key (company domain / contact email / deal name) and get
  *    `attrs.hubspotId`, or else created as `company:hs-<id>` etc. Human edits land on main as actor "HubSpot".
  *  - startHubSpotSync(repo): the same every 20s, but only for records modified since the last sync (search API on
- *    hs_lastmodifieddate) and only for values that changed IN HubSpot, skipping echoes of Mainline's own writes.
+ *    hs_lastmodifieddate) and only for values that changed IN HubSpot, skipping echoes of Git CRM's own writes.
  *    Then repo.refreshOpenPRs(), so a human edit in HubSpot can make an open agent PR conflict or go stale.
  *  - Write-back (merged PRs -> HubSpot) lives in src/adapters/hubspot.ts and uses the same mapping (./map).
  */
@@ -156,7 +156,7 @@ async function doImport(repo: RepoLike, opts: ImportOptions): Promise<HubSpotImp
           remember(object, hsId, m.attrs);
           continue;
         } else if (wasCreatedByUs(object, hsId, ts)) {
-          continue; // Mainline just created this record; the adapter records its hubspotId itself
+          continue; // Git CRM just created this record; the adapter records its hubspotId itself
         } else {
           entityId = `${type}:${IMPORT_PREFIX}${hsId}`;
           if (state.entities[entityId] && !state.entities[entityId]!.deleted) {

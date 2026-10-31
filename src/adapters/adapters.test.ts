@@ -57,7 +57,7 @@ describe("photon notifier", () => {
   } as PullRequest;
   it("formats the message", () => {
     expect(formatPRMessage(pr)).toBe(
-      'Mainline: Inbox agent opened PR #7 "Acme → Negotiation" — deal.amount +$25k > $10k. Reply Y to merge, N to close.',
+      'Git CRM: Inbox agent opened PR #7 "Acme → Negotiation" — deal.amount +$25k > $10k. Reply Y to merge, N to close.',
     );
   });
   it("posts {to, text} when configured, no-op otherwise", async () => {

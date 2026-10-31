@@ -1,5 +1,5 @@
 /**
- * Push Mainline's demo world (10 companies, 25 contacts, 10 deals, with company associations) INTO your HubSpot
+ * Push Git CRM's demo world (10 companies, 25 contacts, 10 deals, with company associations) INTO your HubSpot
  * portal, so the HubSpot side of the demo looks real. Idempotent: records are matched by company domain,
  * contact email and deal name first; re-running only patches what differs.
  *

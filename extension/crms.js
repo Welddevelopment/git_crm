@@ -3,7 +3,7 @@
  * One entry per CRM: { id, name, color, hosts(host, settings) -> bool, match(url) -> record | null }.
  * A record is { crm, crmName, objectType, kind, id, label, extra? } where:
  *   objectType = what the lookup route receives (CRM-native spelling, per RecordLookup contract)
- *   kind       = normalized Mainline type: "deal" | "contact" | "company" | "pr" | other
+ *   kind       = normalized Git CRM type: "deal" | "contact" | "company" | "pr" | other
  */
 (function (root) {
   "use strict";

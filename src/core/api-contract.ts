@@ -69,10 +69,10 @@ export type { Change };
  *  Used by the Chrome extension side panel. CORS-open. */
 export interface RecordLookup {
   crm: "hubspot" | "attio" | "mainline";
-  entityId: string | null; // Mainline entity id (null if this external record isn't mirrored)
+  entityId: string | null; // Git CRM entity id (null if this external record isn't mirrored)
   entity: import("./types").EntityRecord | null; // current main state
   displayName: string | null;
   pendingPRs: import("./types").PullRequest[]; // open PRs whose changes touch this entity (resolved through aliases)
   history: Record<string, import("./types").FieldProvenance[]>; // per-field blame (latest 5 per field)
-  mainlineUrl: string; // deep link to /crm?entity=<id> on the Mainline app
+  mainlineUrl: string; // deep link to /crm?entity=<id> on the Git CRM app
 }
