@@ -162,3 +162,12 @@
 .resultBig { font-family: var(--mono); font-size: 20px; font-weight: 650; color: var(--del); letter-spacing: -.01em; }
 .resultGood { color: var(--add); }
 .prLine { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 3px 0; }
+
+/* watch account by URL (webwatch + Firecrawl) */
+.watch { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; }
+.watchLabel { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-family: var(--mono); white-space: nowrap; }
+.watchForm { display: flex; gap: 8px; flex: 1; min-width: 260px; }
+.watchInput { flex: 1; min-width: 0; }
+.watchStatus { font-size: 12.5px; display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.watchOk { color: var(--add); }
+.watchOk a { color: var(--add); text-decoration: underline; text-underline-offset: 2px; font-weight: 600; }

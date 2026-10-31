@@ -2,11 +2,13 @@
 import type { AgentContext, AgentProposal, CRMAgent, CRMState, EntityId, EvidenceDoc, EvidenceRef, FieldValue, NewEvent } from "../../core/types";
 import { detect, pageKind, pageLabel, type EmployeesFinding, type SignalFinding } from "./detectors";
 
+import { hasFirecrawlKey, scrapeUrl, toEvidenceDoc } from "./firecrawl";
+
 export { detect, pageKind } from "./detectors";
+export { scrapeUrl, crawlCompany, hasFirecrawlKey } from "./firecrawl";
+export { proposeFromUrl } from "./fromUrl";
 
 const ACTOR = { kind: "agent", id: "webwatch", name: "Web watcher" } as const;
-const FIRECRAWL_URL = "https://api.firecrawl.dev/v1/scrape";
-const FIRECRAWL_TIMEOUT_MS = 10_000;
 
 // ---------- small state helpers (no engine import: agents read CRMState directly) ----------
 
@@ -65,51 +67,24 @@ function groupByCompany(state: CRMState, docs: EvidenceDoc[]): Map<EntityId, Evi
 }
 
 // ---------- live mode (Firecrawl) ----------
-
-/** Fetch https://<domain> via Firecrawl. Any failure → null. Only called when FIRECRAWL_API_KEY is set. */
-export async function scrapeDomain(companyId: EntityId, domain: string, key: string, now: number): Promise<EvidenceDoc | null> {
-  const host = hostOf(domain);
-  if (!host) return null;
-  const url = `https://${host}`;
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), FIRECRAWL_TIMEOUT_MS);
-  try {
-    const res = await fetch(FIRECRAWL_URL, {
-      method: "POST",
-      headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-      body: JSON.stringify({ url, formats: ["markdown"] }),
-      signal: ctrl.signal,
-    });
-    if (!res.ok) return null;
-    const json = (await res.json()) as { success?: boolean; data?: { markdown?: string; metadata?: { title?: string; sourceURL?: string } } };
-    const body = json?.data?.markdown;
-    if (json?.success === false || typeof body !== "string" || !body.trim()) return null;
-    const day = new Date(now).toISOString().slice(0, 10);
-    return {
-      id: `web_${companyId.replace(/^company:/, "")}_live_${day}`,
-      kind: "web",
-      ts: now,
-      title: json.data?.metadata?.title || host,
-      url: json.data?.metadata?.sourceURL || url,
-      body,
-      entities: [companyId],
-    };
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
+// Only companies a human opted in (attrs.watchUrl, set via "Watch account by URL") are scraped.
+// Seeded companies have fictional domains that may resolve to unrelated real sites, so never scrape attrs.domain.
 
 async function liveDocs(ctx: AgentContext, covered: Set<EntityId>): Promise<EvidenceDoc[]> {
-  const key = typeof process !== "undefined" ? process.env.FIRECRAWL_API_KEY : undefined;
-  if (!key) return [];
+  if (!hasFirecrawlKey()) return [];
   const targets = Object.values(ctx.state.entities).filter(
-    (r) => r.type === "company" && !r.deleted && !r.mergedInto && !covered.has(r.id) && typeof r.attrs.domain === "string" && r.attrs.domain,
+    (r) => r.type === "company" && !r.deleted && !r.mergedInto && !covered.has(r.id) && typeof r.attrs.watchUrl === "string" && /^https?:\/\//i.test(r.attrs.watchUrl),
   );
-  const docs = await Promise.all(targets.map((r) => scrapeDomain(r.id, String(r.attrs.domain), key, ctx.now()).catch(() => null)));
+  if (!targets.length) return [];
+  const now = ctx.now();
+  const docs = await Promise.all(
+    targets.map(async (r): Promise<EvidenceDoc | null> => {
+      const d = await scrapeUrl(String(r.attrs.watchUrl), { now }).catch(() => null);
+      return d ? { ...toEvidenceDoc(d), entities: [r.id] } : null;
+    }),
+  );
   const ok = docs.filter((d): d is EvidenceDoc => d !== null);
-  if (targets.length) ctx.log(`live: scraped ${ok.length}/${targets.length} homepages via Firecrawl`);
+  ctx.log(`live: scraped ${ok.length}/${targets.length} watched URL(s) via Firecrawl`);
   return ok;
 }
 

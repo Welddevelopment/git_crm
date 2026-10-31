@@ -192,32 +192,40 @@ describe("webwatch agent", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("live mode: scrapes uncovered domains via Firecrawl and runs the same detectors", async () => {
+  it("live mode: never scrapes seeded domains — only companies with attrs.watchUrl", async () => {
     vi.stubEnv("FIRECRAWL_API_KEY", "fc-test");
     const fetchSpy = vi.fn(async (_url: string, init?: RequestInit) => {
       const { url } = JSON.parse(String(init!.body)) as { url: string };
-      if (url === "https://kestrelbank.com") {
+      if (url === "https://kestrel.example/") {
         return new Response(JSON.stringify({ success: true, data: { markdown: "# Kestrel Bank\nNow serving customers in Canada. SOC 2 audited.", metadata: { title: "Kestrel Bank", sourceURL: url } } }));
       }
       return new Response("nope", { status: 500 });
     });
     vi.stubGlobal("fetch", fetchSpy);
-    const props = await webwatchAgent.run(ctx([ACME_CAREERS]));
-    // acme has a seed doc → not scraped; the other three are
+    // no watchUrl anywhere → zero network calls even with a key
+    expect(await webwatchAgent.run(ctx([ACME_CAREERS]))).toHaveLength(1);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    const state = WORLD();
+    state.entities["company:kestrel"]!.attrs.watchUrl = "https://kestrel.example/";
+    state.entities["company:northwind"]!.attrs.watchUrl = "https://northwind.example/";
+    const props = await webwatchAgent.run(ctx([ACME_CAREERS], state));
     const scraped = fetchSpy.mock.calls.map((c) => JSON.parse(String(c[1]!.body)).url).sort();
-    expect(scraped).toEqual(["https://brightlinehealth.com", "https://kestrelbank.com", "https://northwindfreight.com"]);
+    expect(scraped).toEqual(["https://kestrel.example/", "https://northwind.example/"]);
     expect(fetchSpy.mock.calls[0]![0]).toBe("https://api.firecrawl.dev/v1/scrape");
     expect((fetchSpy.mock.calls[0]![1]!.headers as Record<string, string>).authorization).toBe("Bearer fc-test");
     const kestrel = props.find((p) => p.title.startsWith("Kestrel Bank"))!;
     expect(kestrel.title).toBe("Kestrel Bank: +expansion:canada, +security:soc2");
     expect(kestrel.events[0]!.op.type).toBe("evidence.attach");
-    expect(props).toHaveLength(2); // failures skipped silently
+    expect(props).toHaveLength(2); // acme (seed doc) + kestrel; northwind failure skipped silently
   });
 
   it("live mode: fetch throwing is swallowed", async () => {
     vi.stubEnv("FIRECRAWL_API_KEY", "fc-test");
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("ECONNRESET"); }));
-    await expect(webwatchAgent.run(ctx([]))).resolves.toEqual([]);
+    const state = WORLD();
+    state.entities["company:acme"]!.attrs.watchUrl = "https://acme.example/";
+    await expect(webwatchAgent.run(ctx([], state))).resolves.toEqual([]);
   });
 
   it("LLM mode prepends a summary; LLM failure falls back silently", async () => {

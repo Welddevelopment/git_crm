@@ -7,6 +7,7 @@ import { src, useLive } from "./data";
 import { isLive, pipelineTotal, usd } from "./lib";
 import { EntityTable } from "./EntityTable";
 import { LiveDot, MockNotice } from "./ui";
+import { WatchUrl } from "./WatchUrl";
 
 const TABS = [
   { type: "company", label: "Companies" },
@@ -70,6 +71,7 @@ export default function CrmView() {
         ) : null}
       </div>
       {error ? <div className={s.err}>{error}</div> : null}
+      <WatchUrl />
 
       <div className={s.panel}>
         <div className={s.row} style={{ justifyContent: "space-between", padding: "0 12px", borderBottom: "1px solid var(--border)" }}>
