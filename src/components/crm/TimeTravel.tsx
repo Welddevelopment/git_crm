@@ -73,6 +73,8 @@ export default function TimeTravel() {
   const last = moments.length - 1;
 
   const [idx, setIdx] = useState<number | null>(null); // null = following "now"
+  const [restoring, setRestoring] = useState(false);
+  const [restored, setRestored] = useState<{ id: string; title: string } | null>(null);
   const cur = idx === null ? last : Math.min(idx, last);
   const atNow = idx === null || cur === last;
 
@@ -183,6 +185,14 @@ export default function TimeTravel() {
         </div>
       </div>
 
+      {restored ? (
+        <div className={`${s.banner} ${s.bannerLive}`} style={{ marginBottom: 12 }}>
+          <span className={s.dot} style={{ background: "var(--positive)" }} />
+          <span>Restored. Merged as <a href={`/prs/${restored.id}`}><b>{restored.title}</b></a> ({prNum(restored.id)}). Revert that PR to undo it.</span>
+          <span className={s.grow} />
+          <button className={s.btn} onClick={() => setRestored(null)}>Dismiss</button>
+        </div>
+      ) : null}
       <div className={`${s.banner} ${atNow ? s.bannerLive : s.bannerPast}`}>
         {atNow ? (
           <><span className={s.dot} style={{ background: "var(--positive)" }} /><span>Viewing main <b>now</b> <span className={s.faint}>· following head</span></span></>
@@ -196,6 +206,30 @@ export default function TimeTravel() {
         <span className={s.grow} />
         <button className={s.btn} onClick={() => jumpEvent(-1)} disabled={cur <= 0} title="Previous change (Shift+←)">← Prev change</button>
         <button className={s.btn} onClick={() => jumpEvent(1)} disabled={atNow} title="Next change (Shift+→)">Next change →</button>
+        {!atNow && m ? (
+          <button
+            className={s.btn}
+            style={{ color: "var(--negative)", borderColor: "color-mix(in srgb, var(--negative) 35%, var(--line))" }}
+            disabled={restoring}
+            title="Opens one PR that sets main back to exactly this moment, and merges it. Revert that PR to undo."
+            onClick={async () => {
+              if (!window.confirm(`Restore the whole CRM to how it was at ${fmtDateLong(m.at)}?\n\nEverything changed since then is undone in one PR. You can revert that PR to undo the restore.`)) return;
+              setRestoring(true);
+              try {
+                const r = await fetch("/api/restore", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ at: m.at, by: "Joel" }) });
+                const body = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(body?.error || `HTTP ${r.status}`);
+                setRestored({ id: body.pr.id, title: body.pr.title });
+                cache.current.clear();
+                setIdx(null);
+              } catch (e) {
+                window.alert(`Restore failed: ${e instanceof Error ? e.message : String(e)}`);
+              } finally {
+                setRestoring(false);
+              }
+            }}
+          >{restoring ? <span className={s.spinner} /> : null}Restore to this point</button>
+        ) : null}
         <button className={`${s.btn} ${s.btnPrimary}`} onClick={() => setIdx(null)} disabled={atNow}>Back to now</button>
       </div>
 

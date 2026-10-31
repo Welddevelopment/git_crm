@@ -10,6 +10,7 @@ import type {
 import type { PRDetail, TimelineEntry } from "../core/api-contract";
 import { blame as blameOf, branchState, diffStates, fold, stateAt } from "../core/engine/state";
 import { previewMerge, revertEvents, threeWayMerge, type MergeResult } from "../core/engine/merge";
+import { restoreOps } from "../core/engine/restore";
 import { checkStaleness, heuristicJudge, llmJudge, type Judge } from "../core/staleness";
 import { DEFAULT_RULES, computeTrust, evaluatePolicy } from "../core/policy";
 import { MemoryStore } from "../store/memory";
@@ -386,6 +387,35 @@ export class Repo {
       await this.store.updatePR(id, { status: "reverted", revertedBy: mergedRevert.id, updatedAt: Date.now() });
       await this.refreshOpenPRs();
       return { revertPr: (await this.store.getPR(mergedRevert.id)) ?? mergedRevert, events };
+    });
+  }
+
+  /**
+   * Point-in-time restore: open a PR that sets main back to how it was at wall-clock `at`, and merge it.
+   * Nothing is rewritten; the restore is one merged PR (revertible like any other). Schema additions stay.
+   */
+  async restore(at: number, by: Actor): Promise<{ pr: PullRequest; events: Event[] }> {
+    return this.serial(async () => {
+      if (!Number.isFinite(at)) throw new RepoError(400, "restore needs a numeric `at` (epoch ms)");
+      const main = await this.mainEvents();
+      const plan = restoreOps(fold(main), stateAt(main, at));
+      if (!plan.ops.length) throw conflict("main already matches that point in time");
+      const when = new Date(at).toISOString().replace("T", " ").slice(0, 16) + " UTC";
+      const branch = await this.createUniqueBranch(`restore/`, by);
+      const lines = [
+        `Restores main to how it was at ${when}. Requested by ${actorLabel(by)}.`,
+        "",
+        `- ${plan.fieldsReset} field${plan.fieldsReset === 1 ? "" : "s"} set back`,
+        `- ${plan.recreated} record${plan.recreated === 1 ? "" : "s"} brought back (deleted or merged away since)`,
+        `- ${plan.removed} record${plan.removed === 1 ? "" : "s"} removed (created since)`,
+      ];
+      if (plan.schemaSkipped.length) lines.push(`- Schema kept: ${plan.schemaSkipped.join(", ")} (removing fields would destroy data)`);
+      lines.push("", "Revert this PR to undo the restore.");
+      const pr = await this.openPR(branch.name, `Restore main to ${when}`, lines.join("\n"), by);
+      await this.commit(branch.name, plan.ops.map((op) => ({ actor: by, op, reason: `restore to ${when}` })));
+      const merged = await this.mergeInternal(pr.id, by, undefined, { bypassPolicy: true, skipRefresh: true });
+      await this.refreshOpenPRs();
+      return { pr: (await this.store.getPR(merged.pr.id)) ?? merged.pr, events: merged.events };
     });
   }
 
