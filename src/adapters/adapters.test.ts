@@ -45,7 +45,7 @@ describe("adapters", () => {
     const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://api.hubapi.com/crm/v3/objects/deals/123");
     expect(init.method).toBe("PATCH");
-    expect(JSON.parse(init.body as string)).toEqual({ properties: { amount: "50000", dealstage: "negotiation" } });
+    expect(JSON.parse(init.body as string)).toEqual({ properties: { amount: "50000", dealstage: "contractsent" } });
   });
 });
 
