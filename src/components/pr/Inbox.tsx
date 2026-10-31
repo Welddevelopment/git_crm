@@ -7,6 +7,10 @@ import type { PRStatus, PullRequest } from "@/core/types";
 import { ActorChip, IconComment, IconDiff, IconPROpen, PRBadges, StatusIcon } from "./atoms";
 import { changeCount, fmtAge, fmtDateTime, pluralize } from "./format";
 import { errorMessage, prSource, withMock, type Source } from "./source";
+import { CATEGORIES, bulkSafe, categorize, categoryCounts, categoryLabel, groupPRs, needsYou, type CategoryKey, type GroupBy } from "./categorize";
+
+const REVIEWER = "Joel";
+type Filter = "all" | "needs" | CategoryKey;
 
 const TABS: { key: PRStatus; label: string }[] = [
   { key: "open", label: "Open" },
@@ -30,14 +34,30 @@ export function Inbox() {
   const [sel, setSel] = useState(0);
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const [now, setNow] = useState(() => Date.now());
+  const [filter, setFilter] = useState<Filter>("all");
+  const [groupBy, setGroupBy] = useState<GroupBy>("category");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const seen = useRef<Set<string> | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // restore tab from URL
+  // restore tab / filter / grouping from URL
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("tab") as PRStatus | null;
+    const q = new URLSearchParams(window.location.search);
+    const t = q.get("tab") as PRStatus | null;
     if (t && TABS.some((x) => x.key === t)) setTab(t);
+    const f = q.get("filter") as Filter | null;
+    if (f && (f === "all" || f === "needs" || CATEGORIES.some((c) => c.key === f))) setFilter(f);
+    const g = q.get("group") as GroupBy | null;
+    if (g && ["category", "agent", "none"].includes(g)) setGroupBy(g);
   }, []);
+
+  const setParam = (k: string, v: string | null) => {
+    const u = new URL(window.location.href);
+    if (v == null) u.searchParams.delete(k);
+    else u.searchParams.set(k, v);
+    window.history.replaceState(null, "", u.toString());
+  };
 
   const load = useCallback(async () => {
     try {
@@ -88,15 +108,54 @@ export function Inbox() {
     return c;
   }, [prs]);
 
-  const rows = useMemo(() => sortPRs((prs || []).filter((p) => p.status === tab), tab), [prs, tab]);
+  const inTab = useMemo(() => sortPRs((prs || []).filter((p) => p.status === tab), tab), [prs, tab]);
+  const catCounts = useMemo(() => categoryCounts(inTab), [inTab]);
+  const needsCount = useMemo(() => inTab.filter(needsYou).length, [inTab]);
+  const filtered = useMemo(
+    () => inTab.filter((p) => (filter === "all" ? true : filter === "needs" ? needsYou(p) : categorize(p) === filter)),
+    [inTab, filter],
+  );
+  const groups = useMemo(() => groupPRs(filtered, groupBy), [filtered, groupBy]);
+  const rows = useMemo(() => groups.flatMap((g) => g.prs), [groups]);
+
+  const pickFilter = (f: Filter) => {
+    setFilter(f);
+    setSel(0);
+    setParam("filter", f === "all" ? null : f);
+  };
+  const pickGroup = (g: GroupBy) => {
+    setGroupBy(g);
+    setSel(0);
+    setParam("group", g === "category" ? null : g);
+  };
+
+  const approveGroup = async (label: string, list: PullRequest[]) => {
+    const safe = list.filter(bulkSafe);
+    if (!safe.length) return;
+    const skipped = list.length - safe.length;
+    const msg = `Merge ${pluralize(safe.length, "pull request")} in "${label}" into main?` + (skipped ? `\n\n${skipped} PR${skipped === 1 ? " is" : "s are"} left for one-by-one review (stale, conflicting, blocked, or a merge/schema change).` : "");
+    if (!window.confirm(msg)) return;
+    setBusy(label);
+    let ok = 0;
+    const failed: string[] = [];
+    for (const p of safe) {
+      try {
+        await prSource.merge(source, p.id, REVIEWER);
+        ok++;
+      } catch (e) {
+        failed.push(`#${p.id.replace(/^pr_/, "")}: ${errorMessage(e)}`);
+      }
+    }
+    setBusy(null);
+    setNotice(`Merged ${ok} of ${safe.length} in "${label}".` + (failed.length ? ` Failed: ${failed.join("; ")}` : ""));
+    setTimeout(() => setNotice(null), 6000);
+    void load();
+  };
 
   const switchTab = (t: PRStatus) => {
     setTab(t);
     setSel(0);
-    const u = new URL(window.location.href);
-    if (t === "open") u.searchParams.delete("tab");
-    else u.searchParams.set("tab", t);
-    window.history.replaceState(null, "", u.toString());
+    setParam("tab", t === "open" ? null : t);
   };
 
   // keyboard: j/k move, enter/o open, 1-4 tabs
@@ -169,12 +228,73 @@ export function Inbox() {
             <span className="pr-kbd">j</span> <span className="pr-kbd">k</span> move · <span className="pr-kbd">↵</span> open
           </span>
         </div>
+        {prs && inTab.length > 0 && (
+          <div className="pr-filters" role="toolbar" aria-label="Filter pull requests">
+            <button className={`pr-fchip ${filter === "all" ? "on" : ""}`} onClick={() => pickFilter("all")}>
+              All <span className="c">{inTab.length}</span>
+            </button>
+            {tab === "open" && (
+              <button className={`pr-fchip needs ${filter === "needs" ? "on" : ""}`} onClick={() => pickFilter("needs")} title="Held by policy, stale or conflicting">
+                Needs you <span className="c">{needsCount}</span>
+              </button>
+            )}
+            <span className="pr-fsep" />
+            {CATEGORIES.filter((c) => catCounts[c.key] > 0 || filter === c.key).map((c) => (
+              <button key={c.key} className={`pr-fchip cat-${c.key} ${filter === c.key ? "on" : ""}`} onClick={() => pickFilter(c.key)} title={c.hint}>
+                <i className="sw" />
+                {c.label} <span className="c">{catCounts[c.key]}</span>
+              </button>
+            ))}
+            <span className="pr-spacer" />
+            <label className="pr-groupby">
+              Group by
+              <select value={groupBy} onChange={(e) => pickGroup(e.target.value as GroupBy)}>
+                <option value="category">Category</option>
+                <option value="agent">Agent</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+          </div>
+        )}
+        {notice && <div className="pr-bulk-note">{notice}</div>}
         <div ref={listRef}>
           {!prs && !fatal && [0, 1, 2, 3].map((i) => <div key={i} className="pr-skel" />)}
-          {prs && rows.length === 0 && <Empty tab={tab} />}
-          {rows.map((pr, i) => (
-            <Row key={pr.id} pr={pr} idx={i} selected={i === sel} fresh={fresh.has(pr.id)} now={now} onHover={() => setSel(i)} />
-          ))}
+          {prs && inTab.length === 0 && <Empty tab={tab} />}
+          {prs && inTab.length > 0 && rows.length === 0 && (
+            <div className="pr-empty">
+              <h3>Nothing here</h3>
+              <div>No {tab} pull requests match this filter.</div>
+            </div>
+          )}
+          {(() => {
+            let i = -1;
+            return groups.map((g) => {
+              const safeN = tab === "open" ? g.prs.filter(bulkSafe).length : 0;
+              return (
+                <section key={g.key} className="pr-group">
+                  {groupBy !== "none" && (
+                    <div className="pr-group-head">
+                      <span className="name">{g.label}</span>
+                      <span className="pr-count">{g.prs.length}</span>
+                      {g.hint && <span className="hint">{g.hint}</span>}
+                      <span className="pr-spacer" />
+                      {safeN > 0 && (
+                        <button className="btn pr-approve" disabled={busy !== null} onClick={() => void approveGroup(g.label, g.prs)} title="Merges every PR in this group that isn't stale, conflicting, blocked, a record merge or a schema change">
+                          {busy === g.label ? <span className="pr-spin" /> : null}
+                          Approve {safeN === g.prs.length ? "all " : ""}{safeN}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {g.prs.map((pr) => {
+                    i++;
+                    const idx = i;
+                    return <Row key={pr.id} pr={pr} idx={idx} selected={idx === sel} fresh={fresh.has(pr.id)} now={now} onHover={() => setSel(idx)} showCat={groupBy !== "category"} />;
+                  })}
+                </section>
+              );
+            });
+          })()}
         </div>
       </div>
       <div className="pr-foot">
@@ -184,7 +304,8 @@ export function Inbox() {
   );
 }
 
-function Row({ pr, idx, selected, fresh, now, onHover }: { pr: PullRequest; idx: number; selected: boolean; fresh: boolean; now: number; onHover: () => void }) {
+function Row({ pr, idx, selected, fresh, now, onHover, showCat }: { pr: PullRequest; idx: number; selected: boolean; fresh: boolean; now: number; onHover: () => void; showCat?: boolean }) {
+  const cat = categorize(pr);
   const n = changeCount(pr);
   const evidenceN = (pr.changes || []).filter((c) => c.kind === "evidence.added").length;
   const stale = pr.status === "open" && pr.staleness?.status === "stale";
@@ -209,6 +330,12 @@ function Row({ pr, idx, selected, fresh, now, onHover }: { pr: PullRequest; idx:
       </span>
       <div className="pr-row-flex" style={{ gap: 6 }}>
         <span className="title">{pr.title}</span>
+        {showCat && (
+          <span className={`pr-cat cat-${cat}`}>
+            <i className="sw" />
+            {categoryLabel(cat)}
+          </span>
+        )}
         <PRBadges pr={pr} />
       </div>
       <div className="side">
